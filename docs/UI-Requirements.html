@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shamsu — UI/UX Requirements</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #111119; --card-border: #1e1e2e; --orange: #ff6b00; --orange-light: #ff8a33; --orange-glow: rgba(255,107,0,0.15); --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --green: #22c55e; --red: #ef4444; --yellow: #f59e0b; --purple: #a855f7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: var(--card); border-right: 1px solid var(--card-border); padding: 24px 16px; overflow-y: auto; z-index: 100; }
+  .sidebar h2 { font-size: 14px; color: var(--orange); margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .sidebar a { display: block; padding: 8px 12px; color: var(--muted); text-decoration: none; font-size: 13px; border-radius: 6px; margin-bottom: 2px; transition: all 0.15s; }
+  .sidebar a:hover { background: var(--orange-glow); color: var(--orange); }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .main { margin-left: 240px; padding: 48px 60px; max-width: 960px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-orange { background: var(--orange-glow); color: var(--orange); border: 1px solid rgba(255,107,0,0.3); }
+  .badge-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+  h1 span { color: var(--orange); }
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); }
+  h2 .num { color: var(--orange); margin-right: 8px; }
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 10px; color: var(--orange-light); }
+  p, li { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  ul { padding-left: 20px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(255,107,0,0.3); }
+  .card h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th { text-align: left; padding: 10px 12px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--card-border); }
+  td { padding: 10px 12px; font-size: 13px; color: var(--muted); border-bottom: 1px solid rgba(30,30,46,0.5); }
+  tr:hover td { background: rgba(255,107,0,0.03); }
+  code { background: rgba(255,107,0,0.08); color: var(--orange-light); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .highlight-box { background: linear-gradient(135deg, rgba(255,107,0,0.08), rgba(255,107,0,0.02)); border: 1px solid rgba(255,107,0,0.2); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .wireframe { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .wireframe-title { font-size: 12px; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600; }
+  .wireframe-box { background: rgba(255,107,0,0.05); border: 1px dashed rgba(255,107,0,0.3); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12px; color: var(--dim); }
+  .wireframe-box.active { background: rgba(255,107,0,0.1); border-style: solid; color: var(--orange-light); }
+  .color-swatch { width: 100%; height: 60px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; margin-bottom: 4px; font-size: 13px; color: var(--muted); transition: all 0.15s; }
+  .nav-item:hover { background: var(--orange-glow); color: var(--orange); }
+  .nav-item.active { background: var(--orange-glow); color: var(--orange); font-weight: 600; }
+  .nav-icon { width: 20px; text-align: center; }
+  .page-preview { background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; margin-bottom: 16px; min-height: 200px; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .page-title { font-size: 18px; font-weight: 700; }
+  .page-subtitle { font-size: 12px; color: var(--dim); }
+  .btn { display: inline-block; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-orange { background: var(--orange); color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--muted); }
+  .btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .input-mock { width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 6px; color: var(--dim); font-size: 12px; }
+  .step-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 6px; font-size: 12px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .step-label { flex: 1; color: var(--muted); }
+  .step-action { color: var(--orange); font-weight: 600; }
+  @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px; } .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>Shamsu UI/UX</h2>
+  <a href="#design-system">1. Design System</a>
+  <a href="#colors" class="sub">2. Color Palette</a>
+  <a href="#typography" class="sub">3. Typography</a>
+  <a href="#components" class="sub">4. Components</a>
+  <a href="#navigation" class="sub">5. Navigation</a>
+  <a href="#pages" class="sub">6. Page Wireframes</a>
+  <a href="#page-landing" class="sub">7. Landing Page</a>
+  <a href="#page-dashboard" class="sub">8. Dashboard</a>
+  <a href="#page-review" class="sub">9. Workflow Review</a>
+  <a href="#page-api" class="sub">10. API Detail</a>
+  <a href="#page-admin" class="sub">11. Admin Pages</a>
+  <a href="#page-payments" class="sub">12. Payments</a>
+  <a href="#responsive" class="sub">13. Responsive</a>
+</nav>
+
+<main class="main">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span class="badge badge-orange">v2.0</span>
+    <span style="font-size:12px;color:var(--dim)">July 2026</span>
+  </div>
+  <h1>Shamsu <span>UI/UX</span></h1>
+  <p class="subtitle">AI-powered, black + orange design system inspired by <a href="https://stepped.ai" style="color:var(--orange)">stepped.ai</a>'s modern layout.</p>
+
+  <!-- 1. Design System -->
+  <h2 id="design-system"><span class="num">01</span>Design System</h2>
+  <div class="highlight-box">
+    <p style="color:var(--text);font-weight:600;margin-bottom:8px">Theme: Dark with orange accents. AI-powered branding.</p>
+    <p>Clean, modern, minimal. High contrast for readability. Orange for primary actions and emphasis. Black background for focus. "AI-powered" badge visible in header and landing page. Ollama status indicator in dashboard.</p>
+  </div>
+
+  <!-- 2. Colors -->
+  <h2 id="colors"><span class="num">02</span>Color Palette</h2>
+  <div class="grid-4">
+    <div><div class="color-swatch" style="background:#0a0a0f;border:1px solid var(--card-border)"><span style="color:var(--dim)">#0a0a0f</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Background</p></div>
+    <div><div class="color-swatch" style="background:#111119;border:1px solid var(--card-border)"><span style="color:var(--dim)">#111119</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Card</p></div>
+    <div><div class="color-swatch" style="background:#1e1e2e"><span style="color:var(--dim)">#1e1e2e</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Border</p></div>
+    <div><div class="color-swatch" style="background:#ff6b00"><span style="color:#fff">#ff6b00</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Primary Orange</p></div>
+  </div>
+  <div class="grid-4">
+    <div><div class="color-swatch" style="background:#ff8a33"><span style="color:#000">#ff8a33</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Orange Light</p></div>
+    <div><div class="color-swatch" style="background:#e2e8f0"><span style="color:#000">#e2e8f0</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Text</p></div>
+    <div><div class="color-swatch" style="background:#94a3b8"><span style="color:#000">#94a3b8</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Muted</p></div>
+    <div><div class="color-swatch" style="background:#64748b"><span style="color:#fff">#64748b</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Dim</p></div>
+  </div>
+  <div class="grid-3">
+    <div><div class="color-swatch" style="background:#22c55e"><span style="color:#000">#22c55e</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Success / Green</p></div>
+    <div><div class="color-swatch" style="background:#ef4444"><span style="color:#fff">#ef4444</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Error / Red</p></div>
+    <div><div class="color-swatch" style="background:#f59e0b"><span style="color:#000">#f59e0b</span></div><p style="font-size:11px;color:var(--dim);margin-top:4px">Warning / Yellow</p></div>
+  </div>
+
+  <!-- 3. Typography -->
+  <h2 id="typography"><span class="num">03</span>Typography</h2>
+  <table>
+    <thead><tr><th>Element</th><th>Font</th><th>Size</th><th>Weight</th><th>Color</th></tr></thead>
+    <tbody>
+      <tr><td>Page Title</td><td>system</td><td>36px</td><td>800</td><td>var(--text)</td></tr>
+      <tr><td>Section Title</td><td>system</td><td>22px</td><td>700</td><td>var(--text)</td></tr>
+      <tr><td>Card Title</td><td>system</td><td>15px</td><td>600</td><td>var(--text)</td></tr>
+      <tr><td>Body Text</td><td>system</td><td>14px</td><td>400</td><td>var(--muted)</td></tr>
+      <tr><td>Small / Label</td><td>system</td><td>12px</td><td>500</td><td>var(--dim)</td></tr>
+      <tr><td>Badge</td><td>system</td><td>11px</td><td>600</td><td>var(--orange)</td></tr>
+      <tr><td>AI Badge</td><td>system</td><td>10px</td><td>700</td><td>var(--orange) on glow bg</td></tr>
+      <tr><td>Button</td><td>system</td><td>13px</td><td>600</td><td>var(--text)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 4. Components -->
+  <h2 id="components"><span class="num">04</span>Component Inventory</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Button — Primary</h4>
+      <div style="margin-top:12px"><span class="btn btn-orange">Generate API</span></div>
+      <p style="margin-top:8px;font-size:12px">Background: var(--orange). Text: white. Border-radius: 6px. Padding: 8px 16px.</p>
+    </div>
+    <div class="card">
+      <h4>Button — Outline</h4>
+      <div style="margin-top:12px"><span class="btn btn-outline">Cancel</span></div>
+      <p style="margin-top:8px;font-size:12px">Transparent bg. Border: var(--card-border). Text: var(--muted). Hover: border orange.</p>
+    </div>
+    <div class="card">
+      <h4>Button — Success</h4>
+      <div style="margin-top:12px"><span class="btn btn-green">Approve Payment</span></div>
+      <p style="margin-top:8px;font-size:12px">Background: rgba(34,197,94,0.15). Text: var(--green). Border: rgba(34,197,94,0.3).</p>
+    </div>
+    <div class="card">
+      <h4>Input Field</h4>
+      <div style="margin-top:12px"><div class="input-mock">Enter workflow name...</div></div>
+      <p style="margin-top:8px;font-size:12px">Background: rgba(255,255,255,0.03). Border: var(--card-border). Focus: border orange.</p>
+    </div>
+    <div class="card">
+      <h4>Badge — Active</h4>
+      <div style="margin-top:12px"><span class="badge badge-green">Active</span></div>
+      <p style="margin-top:8px;font-size:12px">Background: rgba(34,197,94,0.1). Text: var(--green). Border-radius: 20px.</p>
+    </div>
+    <div class="card">
+      <h4>Badge — Status</h4>
+      <div style="margin-top:12px"><span class="badge badge-orange">Recording</span></div>
+      <p style="margin-top:8px;font-size:12px">Background: var(--orange-glow). Text: var(--orange). Border-radius: 20px.</p>
+    </div>
+  </div>
+
+  <!-- 5. Navigation -->
+  <h2 id="navigation"><span class="num">05</span>Navigation (Restructured)</h2>
+  <div class="highlight-box">
+    <p style="color:var(--text);font-weight:600;margin-bottom:8px">Simplified flow like stepped.ai: Record → Review → Generate API</p>
+    <p>Dashboard is the single entry point. No complex sidebar hierarchy. Focus on the workflow pipeline.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>User Sidebar</h4>
+      <div style="margin-top:12px">
+        <div class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</div>
+        <div class="nav-item"><span class="nav-icon">⚡</span> Workflows</div>
+        <div class="nav-item"><span class="nav-icon">🔗</span> My APIs</div>
+        <div class="nav-item"><span class="nav-icon">💳</span> Payments</div>
+        <div class="nav-item"><span class="nav-icon">🤖</span> AI Settings</div>
+        <div class="nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+      </div>
+    </div>
+    <div class="card">
+      <h4>Admin Sidebar</h4>
+      <div style="margin-top:12px">
+        <div class="nav-item active"><span class="nav-icon">📊</span> Overview</div>
+        <div class="nav-item"><span class="nav-icon">👥</span> Users</div>
+        <div class="nav-item"><span class="nav-icon">💳</span> Payments</div>
+        <div class="nav-item"><span class="nav-icon">📦</span> Plans</div>
+        <div class="nav-item"><span class="nav-icon">🤖</span> AI Config</div>
+        <div class="nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Page Wireframes -->
+  <h2 id="pages"><span class="num">06</span>Page Wireframes</h2>
+
+  <!-- 7. Landing Page -->
+  <h2 id="page-landing"><span class="num">07</span>Landing Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="page-title" style="color:var(--orange)">SHAMSU</div>
+        <span class="badge badge-orange" style="font-size:9px">AI-POWERED</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span class="btn btn-outline">Log In</span>
+        <span class="btn btn-orange">Sign Up</span>
+      </div>
+    </div>
+    <div style="text-align:center;padding:40px 20px">
+      <h2 style="font-size:28px;margin-bottom:12px;border:none">AI-Powered Website to REST API</h2>
+      <p style="color:var(--dim);font-size:14px;margin-bottom:8px">Record once. AI analyzes. Self-healing execution. All local via Ollama.</p>
+      <p style="color:var(--dim);font-size:12px;margin-bottom:20px">By showing, not coding.</p>
+      <span class="btn btn-orange" style="padding:12px 24px;font-size:14px">Get Started Free</span>
+    </div>
+    <div class="grid-4" style="padding:0 20px">
+      <div class="wireframe"><div class="wireframe-title">1. Record</div><p>Click Record, do the task once.</p></div>
+      <div class="wireframe"><div class="wireframe-title">2. AI Analyzes</div><p>Ollama processes your recording locally.</p></div>
+      <div class="wireframe"><div class="wireframe-title">3. Review</div><p>Mark variables, name fields.</p></div>
+      <div class="wireframe"><div class="wireframe-title">4. API</div><p>Get a typed REST endpoint.</p></div>
+    </div>
+  </div>
+
+  <!-- 8. Dashboard -->
+  <h2 id="page-dashboard"><span class="num">08</span>Dashboard Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Welcome back. Your workflows at a glance.</div>
+      </div>
+      <span class="btn btn-orange">+ New Workflow</span>
+    </div>
+    <div class="grid-4">
+      <div class="card" style="text-align:center;padding:16px">
+        <div style="font-size:28px;font-weight:800;color:var(--orange)">3</div>
+        <p style="font-size:12px">Workflows</p>
+      </div>
+      <div class="card" style="text-align:center;padding:16px">
+        <div style="font-size:28px;font-weight:800;color:var(--orange)">2</div>
+        <p style="font-size:12px">APIs</p>
+      </div>
+      <div class="card" style="text-align:center;padding:16px">
+        <div style="font-size:28px;font-weight:800;color:var(--green)">Active</div>
+        <p style="font-size:12px">Subscription</p>
+      </div>
+      <div class="card" style="text-align:center;padding:16px">
+        <div style="font-size:20px;font-weight:800;color:var(--green)">Connected</div>
+        <p style="font-size:12px">Ollama AI</p>
+      </div>
+    </div>
+    <h4 style="margin:16px 0 8px;font-size:14px">Recent Workflows</h4>
+    <div class="step-item"><div class="step-num">1</div><div class="step-label">Hotel Search</div><div class="step-action">5 steps</div><span class="badge badge-green">Ready</span></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-label">Flight Booking</div><div class="step-action">8 steps</div><span class="badge badge-orange">Draft</span></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-label">Price Monitor</div><div class="step-action">3 steps</div><span class="badge badge-green">Ready</span></div>
+  </div>
+
+  <!-- 9. Workflow Review -->
+  <h2 id="page-review"><span class="num">09</span>Workflow Review Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Review: Hotel Search</div>
+        <div class="page-subtitle">Mark each step as Constant or Variable.</div>
+      </div>
+    </div>
+    <div class="step-item" style="border-color:rgba(34,197,94,0.3)">
+      <div class="step-num">1</div>
+      <div class="step-label"><strong>NAVIGATE</strong> → booking.com</div>
+      <span class="btn btn-outline" style="font-size:10px;padding:4px 8px">Constant</span>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-label"><strong>CLICK</strong> → Destination input</div>
+      <span class="btn btn-orange" style="font-size:10px;padding:4px 8px">Variable</span>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-label"><strong>INPUT</strong> → "Singapore" in destination</div>
+      <span class="btn btn-orange" style="font-size:10px;padding:4px 8px">Variable</span>
+    </div>
+    <div class="step-item">
+      <div class="step-num">4</div>
+      <div class="step-label"><strong>CLICK</strong> → Search button</div>
+      <span class="btn btn-outline" style="font-size:10px;padding:4px 8px">Constant</span>
+    </div>
+    <div class="step-item" style="border-color:rgba(34,197,94,0.3)">
+      <div class="step-num">E</div>
+      <div class="step-label"><strong>EXTRACT</strong> → Hotel names</div>
+      <span class="badge badge-green">Extract</span>
+    </div>
+    <div style="margin-top:16px;padding:16px;background:var(--card);border:1px solid var(--card-border);border-radius:8px">
+      <div style="display:flex;gap:12px;align-items:end">
+        <div style="flex:1"><p style="font-size:12px;color:var(--dim);margin-bottom:4px">API Name</p><div class="input-mock">Hotel Search API</div></div>
+        <span class="btn btn-orange">Generate API</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. API Detail -->
+  <h2 id="page-api"><span class="num">10</span>API Detail Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Hotel Search API</div>
+        <div class="page-subtitle">POST /api/w/hotel-search/run</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span class="btn btn-outline">Copy cURL</span>
+        <span class="btn btn-orange">Run API</span>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h4 style="margin-bottom:8px;font-size:13px">Input Variables</h4>
+        <div style="margin-bottom:8px"><p style="font-size:11px;color:var(--dim);margin-bottom:2px">destination</p><div class="input-mock">Singapore</div></div>
+        <div style="margin-bottom:8px"><p style="font-size:11px;color:var(--dim);margin-bottom:2px">checkin_date</p><div class="input-mock">2026-08-15</div></div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;font-size:13px">Output Schema</h4>
+        <div style="padding:12px;background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:6px;font-family:monospace;font-size:11px;color:var(--dim)">
+          {<br>
+          &nbsp;&nbsp;"hotel_name": "string",<br>
+          &nbsp;&nbsp;"price": "string",<br>
+          &nbsp;&nbsp;"rating": "string"<br>
+          }
+        </div>
+      </div>
+    </div>
+    <h4 style="margin:16px 0 8px;font-size:13px">Execution History</h4>
+    <div class="step-item"><div class="step-label">Run #1</div><div class="step-action">Success</div><span style="font-size:11px;color:var(--dim)">2.3s</span></div>
+    <div class="step-item"><div class="step-label">Run #2</div><div class="step-action" style="color:var(--red)">Failed</div><span style="font-size:11px;color:var(--dim)">15.1s</span></div>
+  </div>
+
+  <!-- 11. Admin Pages -->
+  <h2 id="page-admin"><span class="num">11</span>Admin Pages</h2>
+  <div class="grid-2">
+    <div class="page-preview" style="min-height:160px">
+      <div class="page-header" style="margin-bottom:8px">
+        <div class="page-title" style="font-size:16px">Users</div>
+        <span class="btn btn-outline" style="font-size:10px">Export</span>
+      </div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">user@example.com — Active</div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">admin@shamsu.com — Admin</div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0">new@user.com — Pending</div>
+    </div>
+    <div class="page-preview" style="min-height:160px">
+      <div class="page-header" style="margin-bottom:8px">
+        <div class="page-title" style="font-size:16px">Plans</div>
+        <span class="btn btn-orange" style="font-size:10px">+ New Plan</span>
+      </div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">Weekly — ৳100 — 7 days — Active</div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">Monthly — ৳300 — 30 days — Active</div>
+      <div style="font-size:11px;color:var(--dim);padding:6px 0">Yearly — ৳2,500 — 365 days — Active</div>
+    </div>
+  </div>
+
+  <!-- 12. Payments -->
+  <h2 id="page-payments"><span class="num">12</span>Payments Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Payments</div>
+        <div class="page-subtitle">Choose a plan and pay via bKash.</div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="text-align:center;padding:16px;border-color:rgba(255,107,0,0.3)">
+        <h4 style="color:var(--orange)">Weekly</h4>
+        <div style="font-size:28px;font-weight:800;color:var(--text);margin:8px 0">৳100</div>
+        <p style="font-size:12px;color:var(--dim)">7 days</p>
+        <span class="btn btn-orange" style="margin-top:12px;width:100%">Select</span>
+      </div>
+      <div class="card" style="text-align:center;padding:16px">
+        <h4 style="color:var(--orange)">Monthly</h4>
+        <div style="font-size:28px;font-weight:800;color:var(--text);margin:8px 0">৳300</div>
+        <p style="font-size:12px;color:var(--dim)">30 days</p>
+        <span class="btn btn-orange" style="margin-top:12px;width:100%">Select</span>
+      </div>
+      <div class="card" style="text-align:center;padding:16px">
+        <h4 style="color:var(--orange)">Yearly</h4>
+        <div style="font-size:28px;font-weight:800;color:var(--text);margin:8px 0">৳2,500</div>
+        <p style="font-size:12px;color:var(--dim)">365 days</p>
+        <span class="btn btn-orange" style="margin-top:12px;width:100%">Select</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. AI Settings Page -->
+  <h2 id="page-ai-settings"><span class="num">13</span>AI Settings Page</h2>
+  <div class="page-preview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">AI Settings <span class="badge badge-orange" style="font-size:9px">OLLAMA</span></div>
+        <div class="page-subtitle">Configure your local AI engine. All processing stays on your machine.</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h4 style="margin-bottom:8px;font-size:13px">Connection</h4>
+        <div style="margin-bottom:8px"><p style="font-size:11px;color:var(--dim);margin-bottom:2px">Ollama Host</p><div class="input-mock">http://127.0.0.1:11434</div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--green)"></span>
+          <span style="font-size:12px;color:var(--green)">Connected</span>
+        </div>
+        <h4 style="margin-bottom:8px;font-size:13px">Models</h4>
+        <div style="margin-bottom:8px"><p style="font-size:11px;color:var(--dim);margin-bottom:2px">Text Model (Analysis)</p><div class="input-mock">llama3.2</div></div>
+        <div style="margin-bottom:8px"><p style="font-size:11px;color:var(--dim);margin-bottom:2px">Vision Model (Healing)</p><div class="input-mock">llava</div></div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;font-size:13px">Status</h4>
+        <div class="step-item"><div class="step-label">Ollama Server</div><span class="badge badge-green">Running</span></div>
+        <div class="step-item"><div class="step-label">llama3.2 (text)</div><span class="badge badge-green">Loaded</span></div>
+        <div class="step-item"><div class="step-label">llava (vision)</div><span class="badge badge-green">Loaded</span></div>
+        <h4 style="margin:16px 0 8px;font-size:13px">Installation Help</h4>
+        <div style="padding:12px;background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:6px;font-family:monospace;font-size:11px;color:var(--dim)">
+          brew install ollama<br>
+          ollama pull llama3.2<br>
+          ollama pull llava
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. Responsive -->
+  <h2 id="responsive"><span class="num">14</span>Responsive Behavior</h2>
+  <table>
+    <thead><tr><th>Breakpoint</th><th>Layout</th><th>Changes</th></tr></thead>
+    <tbody>
+      <tr><td>&gt;1200px</td><td>Full sidebar + content</td><td>Default desktop layout</td></tr>
+      <tr><td>900-1200px</td><td>Collapsed sidebar + content</td><td>Icons only, no labels</td></tr>
+      <tr><td>&lt;900px</td><td>No sidebar, hamburger menu</td><td>Mobile-first, stacked grids</td></tr>
+    </tbody>
+  </table>
+  <div class="grid-2">
+    <div class="card"><h4>Desktop</h4><p>Full sidebar navigation. 2-3 column grid layouts. Max-width: 960px content area.</p></div>
+    <div class="card"><h4>Mobile</h4><p>Hidden sidebar with hamburger toggle. Single column. Touch-friendly tap targets (min 44px).</p></div>
+  </div>
+
+  <div style="margin-top:60px;padding:24px;text-align:center;border-top:1px solid var(--card-border)">
+    <p style="color:var(--dim);font-size:12px">Shamsu UI/UX v2.0 — July 2026</p>
+  </div>
+</main>
+</body>
+</html>

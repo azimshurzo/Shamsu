@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shamsu — Product Requirements Document</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #111119; --card-border: #1e1e2e; --orange: #ff6b00; --orange-light: #ff8a33; --orange-glow: rgba(255,107,0,0.15); --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --green: #22c55e; --red: #ef4444; --yellow: #f59e0b; --purple: #a855f7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: var(--card); border-right: 1px solid var(--card-border); padding: 24px 16px; overflow-y: auto; z-index: 100; }
+  .sidebar h2 { font-size: 14px; color: var(--orange); margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .sidebar a { display: block; padding: 8px 12px; color: var(--muted); text-decoration: none; font-size: 13px; border-radius: 6px; margin-bottom: 2px; transition: all 0.15s; }
+  .sidebar a:hover, .sidebar a.active { background: var(--orange-glow); color: var(--orange); }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .main { margin-left: 240px; padding: 48px 60px; max-width: 960px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-orange { background: var(--orange-glow); color: var(--orange); border: 1px solid rgba(255,107,0,0.3); }
+  .badge-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-yellow { background: rgba(245,158,11,0.1); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-purple { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+  h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+  h1 span { color: var(--orange); }
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); }
+  h2 .num { color: var(--orange); margin-right: 8px; }
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 10px; color: var(--orange-light); }
+  p, li { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  ul { padding-left: 20px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(255,107,0,0.3); }
+  .card h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th { text-align: left; padding: 10px 12px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--card-border); }
+  td { padding: 10px 12px; font-size: 13px; color: var(--muted); border-bottom: 1px solid rgba(30,30,46,0.5); }
+  tr:hover td { background: rgba(255,107,0,0.03); }
+  code { background: rgba(255,107,0,0.08); color: var(--orange-light); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .step-flow { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--orange); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .step-text { font-size: 13px; color: var(--muted); }
+  .step-arrow { color: var(--dim); font-size: 16px; }
+  .highlight-box { background: linear-gradient(135deg, rgba(255,107,0,0.08), rgba(255,107,0,0.02)); border: 1px solid rgba(255,107,0,0.2); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .qr-section { text-align: center; padding: 24px; }
+  .qr-section img { max-width: 200px; border-radius: 8px; border: 2px solid var(--card-border); }
+  @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px; } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>Shamsu PRD</h2>
+  <a href="#overview" class="active">1. Product Overview</a>
+  <a href="#architecture" class="sub">2. Core Architecture</a>
+  <a href="#healing" class="sub">3. Healing Ladder</a>
+  <a href="#features" class="sub">4. Feature Requirements</a>
+  <a href="#extension-flow" class="sub">5. Extension Flow</a>
+  <a href="#payments" class="sub">6. Payment System</a>
+  <a href="#user-flows" class="sub">7. User Flows</a>
+  <a href="#non-functional" class="sub">8. Non-Functional</a>
+  <a href="#tech-stack" class="sub">9. Tech Stack</a>
+  <a href="#success" class="sub">10. Success Metrics</a>
+  <a href="#roadmap" class="sub">11. Roadmap</a>
+</nav>
+
+<main class="main">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span class="badge badge-orange">v2.0</span>
+    <span style="font-size:12px;color:var(--dim)">July 2026</span>
+  </div>
+  <h1>Shamsu <span>PRD</span></h1>
+  <p class="subtitle">AI-powered platform to turn any website into a REST API. By showing, not coding.</p>
+
+  <!-- 1. Product Overview -->
+  <h2 id="overview"><span class="num">01</span>Product Overview</h2>
+  <div class="highlight-box">
+    <h4 style="color:var(--orange);font-size:18px;margin-bottom:8px">Shamsu <span class="badge badge-orange" style="font-size:10px;vertical-align:middle">AI-POWERED</span></h4>
+    <p>A locally hosted, AI-powered no-code API creation platform. Record a workflow once in your real, logged-in browser. Shamsu's AI analyzes your recording, compiles it into a deterministic, self-healing automation, and generates a typed REST endpoint — all running locally via Ollama.</p>
+  </div>
+  <div class="grid-3">
+    <div class="card"><h4>Target Users</h4><p>Developers, small businesses, automation engineers in Bangladesh and South Asia</p></div>
+    <div class="card"><h4>Differentiator</h4><p>AI-powered analysis and self-healing execution, fully local via Ollama. Zero cloud dependency. Your machine, your data, your AI.</p></div>
+    <div class="card"><h4>Mission</h4><p>Enable anyone to turn browser workflows into callable REST APIs without writing code.</p></div>
+  </div>
+
+  <!-- 2. Core Architecture -->
+  <h2 id="architecture"><span class="num">02</span>Core Architecture</h2>
+  <p>The system has five layers, inspired by <a href="https://stepped.ai" style="color:var(--orange)">stepped.ai</a>'s proven architecture:</p>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card"><h4>Recording Layer</h4><p>Chrome extension captures DOM actions via event listeners. Records clicks, inputs, navigations, and extraction targets.</p></div>
+    <div class="card"><h4>Healing Layer</h4><p>Deterministic selector matching with ranked fallbacks. Escalates to AI only when selectors fail.</p></div>
+    <div class="card"><h4>Review Layer</h4><p>Users review recorded steps, mark variables/constants, name fields, and generate APIs.</p></div>
+    <div class="card"><h4>Execution Layer</h4><p>Playwright executes workflows with healing ladder (L0-L5). Zero LLM calls on happy path.</p></div>
+    <div class="card"><h4>API Layer</h4><p>Auto-generated REST endpoints from workflows. Callable via HTTP with structured JSON responses.</p></div>
+    <div class="card"><h4>Admin Layer</h4><p>User management, payment approval, subscription plans, system settings.</p></div>
+  </div>
+
+  <!-- 3. Healing Ladder -->
+  <h2 id="healing"><span class="num">03</span>The Healing Ladder</h2>
+  <p>Deterministic first. AI only when the site changes. Every heal becomes a reviewed patch, so the workflow gets stronger with age.</p>
+  <table style="margin-top:16px">
+    <thead><tr><th>Level</th><th>Strategy</th><th>Cost</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-orange">L0</span></td><td>Primary selector</td><td>$0</td><td>Recorded CSS selector hits + element fingerprint check</td></tr>
+      <tr><td><span class="badge badge-orange">L1</span></td><td>Ranked fallbacks</td><td>$0</td><td>test-id, ARIA, text, CSS, XPath — tried in order</td></tr>
+      <tr><td><span class="badge badge-yellow">L2</span></td><td>Structural matching</td><td>$0</td><td>Weighted similarity scoring after markup changes</td></tr>
+      <tr><td><span class="badge badge-yellow">L3</span></td><td>One-call LLM pick (Ollama)</td><td>$0</td><td>Screenshot + intent sent to Ollama llava model. Element coordinates returned.</td></tr>
+      <tr><td><span class="badge badge-red">L4</span></td><td>Scoped agent (Ollama)</td><td>$0</td><td>Ollama agent takes over one step with screenshot feedback loop.</td></tr>
+      <tr><td><span class="badge badge-purple">L5</span></td><td>Human gate</td><td>—</td><td>Parks and notifies for 2FA, captcha, etc.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 4. Feature Requirements -->
+  <h2 id="features"><span class="num">04</span>Feature Requirements</h2>
+  <h3>4.1 Browser Extension</h3>
+  <div class="grid-2">
+    <div class="card"><h4>MVP (Current)</h4><ul><li>CSS selector recording</li><li>Extraction mode (click-to-mark)</li><li>JWT login with backend</li><li>Recording persistence across navigation</li></ul></div>
+    <div class="card"><h4>v2 (Planned)</h4><ul><li>Ranked selector fallbacks (L1)</li><li>Structural matching (L2)</li><li>One-call LLM healing (L3)</li><li>Minimal UI (start/stop button)</li></ul></div>
+  </div>
+
+  <h3>4.2 AI Analysis Pipeline (Ollama — Local)</h3>
+  <ul>
+    <li>Powered by Ollama running locally on user's machine</li>
+    <li>Text model (llama3.2): Analyzes recorded event stream, generates human-readable step labels</li>
+    <li>Vision model (llava): Screenshot analysis for healing L3-L4</li>
+    <li>Pipeline: Recording received → AI analyzes steps → suggests variables/constants → names fields</li>
+    <li>One-time cost per workflow (analysis runs once, not per execution)</li>
+    <li>Fallback: If Ollama not running, system works with deterministic selectors only (L0-L2)</li>
+  </ul>
+
+  <h3>4.3 Workflow Review Page</h3>
+  <ul>
+    <li>Shows AI-interpreted steps with human-readable labels</li>
+    <li>Variable/constant toggle per step</li>
+    <li>Extraction target marking</li>
+    <li>Field naming with AI suggestions</li>
+    <li>Visual step flow diagram</li>
+  </ul>
+
+  <h3>4.4 API Generation & Management</h3>
+  <ul>
+    <li>Auto-generated REST endpoints from workflows</li>
+    <li>API dashboard with usage stats and execution history</li>
+    <li>JSON schema for inputs/outputs</li>
+    <li>API key management with role-based access</li>
+  </ul>
+
+  <h3>4.5 API Execution Engine</h3>
+  <ul>
+    <li>Playwright-based execution with healing ladder (L0-L5)</li>
+    <li>Healing L3: Screenshot → Ollama llava → element coordinates (local, $0)</li>
+    <li>Healing L4: Ollama agent with screenshot feedback loop (local, $0)</li>
+    <li>Graceful fallback: If Ollama unavailable, stops at L2 (deterministic only)</li>
+    <li>Handles popups, overlays, dynamic content</li>
+    <li>Structured JSON response extraction</li>
+    <li>Multi-page pagination support</li>
+  </ul>
+
+  <h3>4.6 Authentication & Authorization</h3>
+  <ul>
+    <li>JWT-based auth with httpOnly cookies (web dashboard)</li>
+    <li>JWT token in response body (extension cross-origin)</li>
+    <li>Role-based access (USER, ADMIN)</li>
+    <li>Extension stores token in <code>chrome.storage.local</code></li>
+  </ul>
+
+  <!-- 5. Extension Flow -->
+  <h2 id="extension-flow"><span class="num">05</span>Extension Login & Workflow Flow</h2>
+  <div class="highlight-box">
+    <p style="color:var(--text);font-weight:600;margin-bottom:12px">The extension operates independently from the web dashboard:</p>
+    <div class="step-flow"><div class="step-num">1</div><div class="step-text">User opens any website</div></div>
+    <div class="step-flow"><div class="step-num">2</div><div class="step-text">Clicks Shamsu extension icon → floating panel appears</div></div>
+    <div class="step-flow"><div class="step-num">3</div><div class="step-text">User logs in with email/password directly in extension</div></div>
+    <div class="step-flow"><div class="step-num">4</div><div class="step-text">Enters workflow name, clicks "Start Recording"</div></div>
+    <div class="step-flow"><div class="step-num">5</div><div class="step-text">Navigates website, performs actions (extension records)</div></div>
+    <div class="step-flow"><div class="step-num">6</div><div class="step-text">Clicks "Stop & Save" → workflow sent to backend</div></div>
+    <div class="step-flow"><div class="step-num">7</div><div class="step-text">Workflow appears in user's dashboard for review</div></div>
+  </div>
+
+  <!-- 6. Payment System -->
+  <h2 id="payments"><span class="num">06</span>Payment System (bKash)</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Manual bKash Payment</h4>
+      <ul>
+        <li>User scans QR code to send payment</li>
+        <li>Enters transaction ID in dashboard</li>
+        <li>Admin reviews and approves/rejects</li>
+        <li>Subscription activated on approval</li>
+      </ul>
+    </div>
+    <div class="card qr-section">
+      <h4 style="margin-bottom:12px">bKash QR Code</h4>
+      <img src="https://imgur.com/a/NXTGPqy" alt="bKash Payment QR Code" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+      <p style="display:none;color:var(--dim);font-size:12px">QR Code: <a href="https://imgur.com/a/NXTGPqy" style="color:var(--orange)">imgur.com/a/NXTGPqy</a></p>
+    </div>
+  </div>
+
+  <h3>Subscription Plans</h3>
+  <table>
+    <thead><tr><th>Plan</th><th>Price</th><th>Duration</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Weekly</td><td>৳100</td><td>7 days</td><td><span class="badge badge-green">Active</span></td></tr>
+      <tr><td>Monthly</td><td>৳300</td><td>30 days</td><td><span class="badge badge-green">Active</span></td></tr>
+      <tr><td>Yearly</td><td>৳2,500</td><td>365 days</td><td><span class="badge badge-green">Active</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- 7. User Flows -->
+  <h2 id="user-flows"><span class="num">07</span>User Flows</h2>
+  <h3>Flow 1: Record → Generate API</h3>
+  <div class="card">
+    <div class="step-flow"><div class="step-num">1</div><div class="step-text">Install Chrome extension, click icon on any site</div></div>
+    <div class="step-flow"><div class="step-num">2</div><div class="step-text">Log in with email/password in extension panel</div></div>
+    <div class="step-flow"><div class="step-num">3</div><div class="step-text">Enter workflow name, click "Start Recording"</div></div>
+    <div class="step-flow"><div class="step-num">4</div><div class="step-text">Perform website actions (extension records all steps)</div></div>
+    <div class="step-flow"><div class="step-num">5</div><div class="step-text">Click "Stop & Save" → workflow sent to backend</div></div>
+    <div class="step-flow"><div class="step-num">6</div><div class="step-text">Open dashboard → review workflow with human-readable labels</div></div>
+    <div class="step-flow"><div class="step-num">7</div><div class="step-text">Mark steps as variable/constant, name fields</div></div>
+    <div class="step-flow"><div class="step-num">8</div><div class="step-text">Click "Generate API" → REST endpoint created</div></div>
+  </div>
+
+  <h3>Flow 2: Execute API</h3>
+  <div class="card">
+    <div class="step-flow"><div class="step-num">1</div><div class="step-text">Open API page in dashboard</div></div>
+    <div class="step-flow"><div class="step-num">2</div><div class="step-text">See input form with AI-generated field names and sample values</div></div>
+    <div class="step-flow"><div class="step-num">3</div><div class="step-text">Enter values (or use defaults from recording)</div></div>
+    <div class="step-flow"><div class="step-num">4</div><div class="step-text">Click "Run API" → Playwright executes workflow</div></div>
+    <div class="step-flow"><div class="step-num">5</div><div class="step-text">Healing ladder activates if selectors fail (L0-L3)</div></div>
+    <div class="step-flow"><div class="step-num">6</div><div class="step-text">Results returned as structured JSON</div></div>
+  </div>
+
+  <h3>Flow 3: Admin Management</h3>
+  <div class="card">
+    <div class="step-flow"><div class="step-num">1</div><div class="step-text">Admin logs in → lands on admin dashboard</div></div>
+    <div class="step-flow"><div class="step-num">2</div><div class="step-text">Views stats, manages users</div></div>
+    <div class="step-flow"><div class="step-num">3</div><div class="step-text">Configures subscription plans (weekly/monthly/yearly)</div></div>
+    <div class="step-flow"><div class="step-num">4</div><div class="step-text">Reviews pending bKash payments</div></div>
+    <div class="step-flow"><div class="step-num">5</div><div class="step-text">Approves/rejects transactions, activates subscriptions</div></div>
+  </div>
+
+  <!-- 8. Non-Functional -->
+  <h2 id="non-functional"><span class="num">08</span>Non-Functional Requirements</h2>
+  <div class="grid-2">
+    <div class="card"><h4>Code Quality</h4><ul><li>All files under 250 lines</li><li>TypeScript everywhere</li><li>Clear <code>feature-name.type.ts</code> naming</li><li>SOLID principles enforced</li></ul></div>
+    <div class="card"><h4>Performance</h4><ul><li>API execution under 60 seconds</li><li>Zero LLM calls on happy path</li><li>Multi-strategy element finding</li></ul></div>
+    <div class="card"><h4>Security</h4><ul><li>AES-256-GCM encryption for credentials</li><li>JWT with httpOnly cookies</li><li>Role-based access control</li></ul></div>
+    <div class="card"><h4>Reliability</h4><ul><li>Self-healing workflows</li><li>Recording persistence across navigation</li><li>Overlay auto-dismissal</li></ul></div>
+  </div>
+
+  <!-- 9. Tech Stack -->
+  <h2 id="tech-stack"><span class="num">09</span>Technology Stack</h2>
+  <table>
+    <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend</td><td>Next.js 14+, Tailwind CSS, Shadcn/UI</td><td>Dashboard, workflow review, API management</td></tr>
+      <tr><td>Backend</td><td>Express.js, Prisma ORM</td><td>API server, workflow processing, auth</td></tr>
+      <tr><td>Database</td><td>PostgreSQL (Homebrew)</td><td>Local data storage</td></tr>
+      <tr><td>Extension</td><td>Chrome Extension Manifest V3</td><td>Browser recording, user authentication</td></tr>
+      <tr><td>Execution</td><td>Playwright (headed mode)</td><td>Workflow automation, data extraction</td></tr>
+      <tr><td>AI</td><td>Ollama (llama3.2 + llava)</td><td>Local AI: workflow analysis, healing L3-L4, screenshot analysis</td></tr>
+      <tr><td>Auth</td><td>JWT, bcryptjs, AES-256</td><td>Authentication, encryption</td></tr>
+      <tr><td>Payment</td><td>bKash (manual QR code)</td><td>Subscription management</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 10. Success Metrics -->
+  <h2 id="success"><span class="num">10</span>Success Metrics</h2>
+  <div class="grid-3">
+    <div class="card" style="text-align:center"><div style="font-size:32px;font-weight:800;color:var(--orange)">&gt;90%</div><p>Workflow recording success rate</p></div>
+    <div class="card" style="text-align:center"><div style="font-size:32px;font-weight:800;color:var(--orange)">&gt;85%</div><p>AI analysis accuracy</p></div>
+    <div class="card" style="text-align:center"><div style="font-size:32px;font-weight:800;color:var(--orange)">&gt;80%</div><p>API execution success rate</p></div>
+  </div>
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card" style="text-align:center"><div style="font-size:32px;font-weight:800;color:var(--orange)">&lt;5 min</div><p>Time to first API from install</p></div>
+    <div class="card" style="text-align:center"><div style="font-size:32px;font-weight:800;color:var(--orange)">$0</div><p>AI cost — always (Ollama local)</p></div>
+  </div>
+
+  <!-- 11. Roadmap -->
+  <h2 id="roadmap"><span class="num">11</span>Roadmap</h2>
+  <table>
+    <thead><tr><th>Phase</th><th>Focus</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Phase 1</td><td>Basic recording, manual review, Playwright execution</td><td><span class="badge badge-green">MVP — Current</span></td></tr>
+      <tr><td>Phase 2</td><td>Healing L1-L2, ranked fallbacks, structural matching</td><td><span class="badge badge-yellow">Next</span></td></tr>
+      <tr><td>Phase 3</td><td>Ollama integration: AI analysis pipeline + healing L3 (llava screenshots)</td><td><span class="badge badge-orange">Planned</span></td></tr>
+      <tr><td>Phase 4</td><td>MCP tool support, cron scheduling, API marketplace</td><td><span class="badge badge-orange">Planned</span></td></tr>
+      <tr><td>Phase 5</td><td>Community workflows, team collaboration, analytics dashboard</td><td><span class="badge badge-orange">Planned</span></td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:60px;padding:24px;text-align:center;border-top:1px solid var(--card-border)">
+    <p style="color:var(--dim);font-size:12px">Shamsu PRD v2.0 — July 2026</p>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shamsu — Technical Design Document</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #111119; --card-border: #1e1e2e; --orange: #ff6b00; --orange-light: #ff8a33; --orange-glow: rgba(255,107,0,0.15); --text: #e2e8f0; --muted: #94a3b8; --dim: #64748b; --green: #22c55e; --red: #ef4444; --yellow: #f59e0b; --purple: #a855f7; --code-bg: #0d0d14; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: var(--card); border-right: 1px solid var(--card-border); padding: 24px 16px; overflow-y: auto; z-index: 100; }
+  .sidebar h2 { font-size: 14px; color: var(--orange); margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .sidebar a { display: block; padding: 8px 12px; color: var(--muted); text-decoration: none; font-size: 13px; border-radius: 6px; margin-bottom: 2px; transition: all 0.15s; }
+  .sidebar a:hover { background: var(--orange-glow); color: var(--orange); }
+  .sidebar .sub { padding-left: 24px; font-size: 12px; }
+  .main { margin-left: 240px; padding: 48px 60px; max-width: 960px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-orange { background: var(--orange-glow); color: var(--orange); border: 1px solid rgba(255,107,0,0.3); }
+  .badge-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+  h1 span { color: var(--orange); }
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 22px; font-weight: 700; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); }
+  h2 .num { color: var(--orange); margin-right: 8px; }
+  h3 { font-size: 17px; font-weight: 600; margin: 24px 0 10px; color: var(--orange-light); }
+  p, li { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  ul { padding-left: 20px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(255,107,0,0.3); }
+  .card h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th { text-align: left; padding: 10px 12px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--card-border); }
+  td { padding: 10px 12px; font-size: 13px; color: var(--muted); border-bottom: 1px solid rgba(30,30,46,0.5); }
+  tr:hover td { background: rgba(255,107,0,0.03); }
+  code { background: rgba(255,107,0,0.08); color: var(--orange-light); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  pre { background: var(--code-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; overflow-x: auto; margin-bottom: 16px; font-size: 12px; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+  .kw { color: #c678dd; } .str { color: #98c379; } .fn { color: #61afef; } .cm { color: #5c6370; font-style: italic; } .num { color: #d19a66; } .type { color: #e5c07b; }
+  .highlight-box { background: linear-gradient(135deg, rgba(255,107,0,0.08), rgba(255,107,0,0.02)); border: 1px solid rgba(255,107,0,0.2); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .file-label { display: inline-block; background: var(--orange); color: var(--bg); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px 6px 0 0; margin-bottom: -1px; position: relative; z-index: 1; }
+  @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px; } .grid-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>Shamsu TDD</h2>
+  <a href="#architecture">1. System Architecture</a>
+  <a href="#healing" class="sub">2. Healing Ladder</a>
+  <a href="#database" class="sub">3. Database Schema</a>
+  <a href="#api-contracts" class="sub">4. API Contracts</a>
+  <a href="#extension" class="sub">5. Extension Protocol</a>
+  <a href="#executor" class="sub">6. Executor Design</a>
+  <a href="#code-executor" class="sub">7. Executor Code</a>
+  <a href="#code-healing" class="sub">8. Healing Logic Code</a>
+  <a href="#code-extension" class="sub">9. Extension Code</a>
+  <a href="#security" class="sub">10. Security Model</a>
+</nav>
+
+<main class="main">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span class="badge badge-orange">v2.0</span>
+    <span style="font-size:12px;color:var(--dim)">July 2026</span>
+  </div>
+  <h1>Shamsu <span>TDD</span></h1>
+  <p class="subtitle">Technical design for an AI-powered, self-healing website-to-API platform. AI runs locally via Ollama.</p>
+
+  <!-- 1. System Architecture -->
+  <h2 id="architecture"><span class="num">01</span>System Architecture</h2>
+  <div class="highlight-box">
+    <p style="color:var(--text);font-weight:600;margin-bottom:8px">Single-server architecture. No Docker. No cloud dependencies.</p>
+    <p>All components run on the user's local machine. PostgreSQL via Homebrew. Express backend. Next.js frontend. Chrome extension for recording.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card"><h4>Backend (Port 4000)</h4><p>Express.js + Prisma ORM. Handles auth, workflow CRUD, API generation, execution, AI analysis via Ollama.</p></div>
+    <div class="card"><h4>Frontend (Port 3000)</h4><p>Next.js 14 App Router. Dashboard, workflow review, API management. "AI-powered" branding throughout.</p></div>
+    <div class="card"><h4>Database</h4><p>PostgreSQL via Homebrew on localhost:5432. 8 tables. Peer auth for local user. Prisma migrations.</p></div>
+    <div class="card"><h4>AI Engine</h4><p>Ollama (localhost:11434). Text model: llama3.2 for analysis. Vision model: llava for screenshots. Fully local, $0 cost.</p></div>
+    <div class="card"><h4>Extension</h4><p>Chrome MV3. Content script injects floating panel. Background service worker manages recording state. JWT for API auth.</p></div>
+    <div class="card"><h4>Execution</h4><p>Playwright (headed mode). Healing ladder L0-L5. L3-L4 powered by Ollama vision model.</p></div>
+  </div>
+
+  <!-- 2. Healing Ladder -->
+  <h2 id="healing"><span class="num">02</span>Healing Ladder Implementation</h2>
+  <p>Each step in a workflow carries ranked selectors. The executor tries each level in order, escalating only on failure.</p>
+
+  <table style="margin-top:16px">
+    <thead><tr><th>Level</th><th>Implementation</th><th>Trigger</th></tr></thead>
+    <tbody>
+      <tr><td><code>L0</code></td><td>Primary CSS selector from recording</td><td>Element found + visible</td></tr>
+      <tr><td><code>L1</code></td><td>Ranked fallbacks: data-testid → aria-label → text → role → placeholder</td><td>L0 fails</td></tr>
+      <tr><td><code>L2</code></td><td>Structural similarity scoring (weighted tag + class + position)</td><td>L1 fails</td></tr>
+      <tr><td><code>L3</code></td><td>Ollama llava: screenshot + intent → element coordinates</td><td>L2 fails + Ollama running</td></tr>
+      <tr><td><code>L4</code></td><td>Ollama agent: multi-screenshot loop with one-step boundary</td><td>L3 fails + Ollama running</td></tr>
+      <tr><td><code>L5</code></td><td>Pause execution, notify user, wait for manual input</td><td>L4 fails</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Selector Data Model</h3>
+  <p>Each WorkflowStep stores ranked selectors as a JSON array:</p>
+  <pre><code>{
+  <span class="str">"primary"</span>: <span class="str">"button[data-testid='search-btn']"</span>,
+  <span class="str">"fallbacks"</span>: [
+    <span class="str">"button[aria-label='Search']"</span>,
+    <span class="str">"button:has-text('Search')"</span>,
+    <span class="str">"button.search-submit"</span>
+  ],
+  <span class="str">"intent"</span>: <span class="str">"Click the search button to submit the form"</span>,
+  <span class="str">"fingerprint"</span>: { <span class="str">"tag"</span>: <span class="str">"button"</span>, <span class="str">"text"</span>: <span class="str">"Search"</span>, <span class="str">"role"</span>: <span class="str">"button"</span> }
+}</code></pre>
+
+  <!-- 3. Database Schema -->
+  <h2 id="database"><span class="num">03</span>Database Schema</h2>
+  <p>8 tables with PostgreSQL. Key models:</p>
+
+  <table>
+    <thead><tr><th>Model</th><th>Key Fields</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>User</code></td><td>id, email, role, subscriptionStatus</td><td>Auth and access control</td></tr>
+      <tr><td><code>Plan</code></td><td>planName, priceBdt, durationDays, active</td><td>Subscription tiers</td></tr>
+      <tr><td><code>PaymentRequest</code></td><td>transactionId, bkashNumber, amount, status</td><td>bKash payment tracking</td></tr>
+      <tr><td><code>Workflow</code></td><td>name, userId</td><td>Container for recorded steps</td></tr>
+      <tr><td><code>WorkflowStep</code></td><td>stepOrder, actionType, selector, context, text, isConstant, isExtractionTarget</td><td>Individual recorded actions</td></tr>
+      <tr><td><code>WorkflowVariable</code></td><td>variableName, defaultValue, stepId</td><td>Named variables for API inputs</td></tr>
+      <tr><td><code>Api</code></td><td>apiName, workflowId, pricePerCall, isActive</td><td>Generated REST endpoint</td></tr>
+      <tr><td><code>ApiCall</code></td><td>callCost, status, resultJson</td><td>Execution history and results</td></tr>
+    </tbody>
+  </table>
+
+  <h3>WorkflowStep Extended Fields (v2)</h3>
+  <div class="grid-2">
+    <div class="card"><h4>Healing Fields</h4><ul><li><code>rankedSelectors</code> — JSON array of fallback selectors</li><li><code>intent</code> — Human-readable step purpose (for AI)</li><li><code>fingerprint</code> — Element tag, text, role, attributes</li></ul></div>
+    <div class="card"><h4>Existing Fields</h4><ul><li><code>context</code> — Element label or description</li><li><code>text</code> — Visible text content</li><li><code>containerSelector</code> — Parent container selector</li><li><code>fieldSelector</code> — Child field selector</li></ul></div>
+  </div>
+
+  <h3>AI Integration: Ollama</h3>
+  <div class="card">
+    <ul>
+      <li><strong>Host:</strong> <code>http://127.0.0.1:11434</code> (default Ollama port)</li>
+      <li><strong>Text model:</strong> <code>llama3.2</code> — workflow analysis, step labeling, variable suggestions</li>
+      <li><strong>Vision model:</strong> <code>llava</code> — screenshot analysis for healing L3-L4</li>
+      <li><strong>Health check:</strong> <code>GET /api/tags</code> — verifies Ollama is running and models are available</li>
+      <li><strong>Fallback:</strong> If Ollama not running, system works with L0-L2 only (deterministic selectors)</li>
+      <li><strong>Installation:</strong> <code>brew install ollama && ollama pull llama3.2 && ollama pull llava</code></li>
+    </ul>
+  </div>
+
+  <!-- 4. API Contracts -->
+  <h2 id="api-contracts"><span class="num">04</span>API Contracts</h2>
+  <h3>Authentication</h3>
+  <pre><code><span class="cm">// POST /api/auth/login</span>
+{ <span class="str">"email"</span>: <span class="str">"user@example.com"</span>, <span class="str">"password"</span>: <span class="str">"..."</span> }
+<span class="cm">// Response: { user, token } — token for extension use</span></code></pre>
+
+  <h3>Workflows</h3>
+  <pre><code><span class="cm">// POST /api/workflows/import</span>
+{ <span class="str">"name"</span>: <span class="str">"Hotel Search"</span>, <span class="str">"steps"</span>: [...], <span class="str">"extractionTargets"</span>: [...] }
+<span class="cm">// Authorization: Bearer &lt;token&gt;</span></code></pre>
+
+  <h3>Execution</h3>
+  <pre><code><span class="cm">// POST /api/execution/run</span>
+{ <span class="str">"workflowId"</span>: <span class="str">"..."</span>, <span class="str">"variables"</span>: { <span class="str">"destination"</span>: <span class="str">"Singapore"</span> } }
+<span class="cm">// Response: { status: "succeeded", outputs: {...} }</span></code></pre>
+
+  <h3>AI / Ollama</h3>
+  <pre><code><span class="cm">// GET /api/ai/health</span>
+<span class="cm">// Response: { ollama: true, models: ["llama3.2", "llava"] }</span>
+
+<span class="cm">// POST /api/ai/analyze</span>
+{ <span class="str">"workflowId"</span>: <span class="str">"..."</span> }
+<span class="cm">// Response: { steps: [...with AI labels...] }</span></code></pre>
+
+  <!-- 5. Extension Protocol -->
+  <h2 id="extension"><span class="num">05</span>Extension Protocol</h2>
+  <div class="highlight-box">
+    <p style="color:var(--text);font-weight:600;margin-bottom:8px">Extension operates independently. User logs in directly in the extension panel.</p>
+  </div>
+
+  <h3>Auth Flow</h3>
+  <div class="card">
+    <ul>
+      <li>Extension stores JWT token in <code>chrome.storage.local</code> under key <code>shamsu_auth_token</code></li>
+      <li>Login: POST to <code>/api/auth/login</code> → receive token → store locally</li>
+      <li>Recording: Send <code>Authorization: Bearer &lt;token&gt;</code> header on import</li>
+      <li>Token valid for 7 days (matching backend JWT expiry)</li>
+    </ul>
+  </div>
+
+  <h3>Recording State</h3>
+  <pre><code><span class="cm">// chrome.storage.local keys</span>
+shamsu_recording: <span class="type">boolean</span>     <span class="cm">// is actively recording</span>
+shamsu_steps: <span class="type">StepData[]</span>      <span class="cm">// recorded steps array</span>
+shamsu_extractions: <span class="type">Target[]</span>  <span class="cm">// extraction targets</span>
+shamsu_auth_token: <span class="type">string</span>      <span class="cm">// JWT token</span>
+shamsu_api_url: <span class="type">string</span>        <span class="cm">// backend URL</span>
+shamsu_workflow_name: <span class="type">string</span>  <span class="cm">// workflow name</span></code></pre>
+
+  <h3>Step Data Structure</h3>
+  <pre><code>{
+  <span class="str">"actionType"</span>: <span class="str">"CLICK"</span> | <span class="str">"INPUT"</span> | <span class="str">"NAVIGATE"</span> | <span class="str">"SCROLL"</span> | <span class="str">"SELECT"</span>,
+  <span class="str">"selector"</span>: <span class="str">"button[data-testid='search']"</span>,
+  <span class="str">"value"</span>: <span class="str">"Singapore"</span>,       <span class="cm">// for INPUT</span>
+  <span class="str">"context"</span>: <span class="str">"Search button"</span>, <span class="cm">// human-readable label</span>
+  <span class="str">"text"</span>: <span class="str">"Search"</span>,           <span class="cm">// visible text</span>
+  <span class="str">"url"</span>: <span class="str">"https://booking.com"</span>,
+  <span class="str">"timestamp"</span>: <span class="num">1721000000000</span>
+}</code></pre>
+
+  <!-- 6. Executor Design -->
+  <h2 id="executor"><span class="num">06</span>Executor Design</h2>
+  <p>The executor runs Playwright in headed mode, processes steps sequentially, and applies the healing ladder at each click/input.</p>
+
+  <h3>Execution Flow</h3>
+  <div class="card">
+    <ul>
+      <li>Launch Chromium (headed, slowMo: 200ms)</li>
+      <li>For each step: dismiss overlays → apply healing ladder → execute action</li>
+      <li>NAVIGATE: goto URL with networkidle, fallback to domcontentloaded</li>
+      <li>INPUT: click → fill → type with 80ms delay → wait 1.5s for autocomplete</li>
+      <li>CLICK: find element via healing ladder → safeClick with force fallback</li>
+      <li>EXTRACT: get text content from selector or container pattern</li>
+      <li>On failure: escalate to next healing level</li>
+      <li>On L5: pause and notify user</li>
+    </ul>
+  </div>
+
+  <!-- 7. Executor Code -->
+  <h2 id="code-executor"><span class="num">07</span>Executor Code (≤250 lines)</h2>
+  <div class="file-label">backend/src/services/workflow/executor.ts</div>
+  <pre><code><span class="kw">import</span> { chromium, Browser, Page } <span class="kw">from</span> <span class="str">"playwright"</span>;
+<span class="kw">import</span> { findWithHealing, HealerContext } <span class="kw">from</span> <span class="str">"./healer"</span>;
+
+<span class="kw">interface</span> <span class="type">StepData</span> {
+  id: <span class="type">string</span>;
+  actionType: <span class="type">string</span>;
+  selector: <span class="type">string</span>;
+  value?: <span class="type">string</span> | <span class="type">null</span>;
+  url?: <span class="type">string</span> | <span class="type">null</span>;
+  context?: <span class="type">string</span> | <span class="type">null</span>;
+  text?: <span class="type">string</span> | <span class="type">null</span>;
+  isExtractionTarget?: <span class="type">boolean</span>;
+  containerSelector?: <span class="type">string</span> | <span class="type">null</span>;
+  fieldSelector?: <span class="type">string</span> | <span class="type">null</span>;
+  fieldName?: <span class="type">string</span> | <span class="type">null</span>;
+  rankedSelectors?: <span class="type">string</span>[];
+  intent?: <span class="type">string</span> | <span class="type">null</span>;
+  fingerprint?: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;;
+}
+
+<span class="kw">async function</span> <span class="fn">dismissOverlays</span>(page: <span class="type">Page</span>): <span class="type">Promise</span>&lt;<span class="type">void</span>&gt; {
+  <span class="kw">const</span> sels = [
+    <span class="str">'[data-testid="modal-close"]'</span>,
+    <span class="str">'[aria-label="Close"]'</span>,
+    <span class="str">'button:has-text("Accept")'</span>,
+    <span class="str">'button:has-text("Got it")'</span>,
+    <span class="str">'button:has-text("Continue")'</span>,
+  ];
+  <span class="kw">for</span> (<span class="kw">const</span> sel <span class="kw">of</span> sels) {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> el = page.locator(sel).first();
+      <span class="kw">if</span> (<span class="kw">await</span> el.isVisible({ timeout: <span class="num">300</span> }).catch(() =&gt; <span class="num">false</span>)) {
+        <span class="kw">await</span> el.click({ timeout: <span class="num">800</span> }).catch(() =&gt; {});
+        <span class="kw">await</span> page.waitForTimeout(<span class="num">300</span>);
+      }
+    } <span class="kw">catch</span> {}
+  }
+  <span class="kw">await</span> page.evaluate(<span class="str">`(() =&gt; {
+    const sels = ['[class*="modal"]','[class*="overlay"]','[class*="popup"]',
+      '[role="dialog"]','[class*="cookie"]'];
+    for (const s of sels) {
+      document.querySelectorAll(s).forEach(el =&gt; {
+        const st = getComputedStyle(el);
+        if (st.position==='fixed'||st.position==='absolute') el.remove();
+      });
+    }
+  })()`</span>);
+  <span class="kw">await</span> page.waitForTimeout(<span class="num">300</span>);
+}
+
+<span class="kw">async function</span> <span class="fn">safeClick</span>(locator: <span class="type">any</span>): <span class="type">Promise</span>&lt;<span class="type">void</span>&gt; {
+  <span class="kw">try</span> { <span class="kw">await</span> locator.click({ timeout: <span class="num">5000</span> }); }
+  <span class="kw">catch</span> (err: <span class="type">any</span>) {
+    <span class="kw">if</span> (err.message?.includes(<span class="str">"intercept"</span>))
+      <span class="kw">await</span> locator.click({ force: <span class="num">true</span>, timeout: <span class="num">5000</span> });
+    <span class="kw">else throw</span> err;
+  }
+}
+
+<span class="kw">export async function</span> <span class="fn">executeWorkflow</span>(
+  steps: <span class="type">StepData</span>[],
+  userVars: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;,
+  varDefs: <span class="type">any</span>[]
+): <span class="type">Promise</span>&lt;<span class="type">any</span>&gt; {
+  <span class="kw">const</span> browser: <span class="type">Browser</span> = <span class="kw">await</span> chromium.launch({
+    headless: <span class="num">false</span>, slowMo: <span class="num">200</span>
+  });
+  <span class="kw">const</span> ctx = <span class="kw">await</span> browser.newContext({
+    viewport: { width: <span class="num">1280</span>, height: <span class="num">800</span> },
+  });
+  <span class="kw">let</span> page: <span class="type">Page</span> = <span class="kw">await</span> ctx.newPage();
+  <span class="kw">const</span> original = page;
+  ctx.on(<span class="str">"page"</span>, (p) =&gt; p.close().catch(() =&gt; {}));
+
+  <span class="kw">const</span> varMap = <span class="kw">new</span> <span class="type">Map</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;();
+  <span class="kw">for</span> (<span class="kw">const</span> v <span class="kw">of</span> varDefs) {
+    <span class="kw">if</span> (v.stepId) varMap.set(v.stepId, v.variableName);
+  }
+  <span class="kw">const</span> results: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">any</span>[]&gt; = {};
+
+  <span class="kw">try</span> {
+    <span class="kw">for</span> (<span class="kw">const</span> step <span class="kw">of</span> steps) {
+      <span class="kw">const</span> varName = varMap.get(step.id);
+      <span class="kw">const</span> val = varName
+        ? userVars[varName] || step.value || <span class="str">""</span>
+        : step.value || <span class="str">""</span>;
+
+      <span class="kw">if</span> (page !== original &amp;&amp; !page.isClosed()) page = original;
+      <span class="kw">await</span> dismissOverlays(page);
+
+      <span class="kw">switch</span> (step.actionType) {
+        <span class="kw">case</span> <span class="str">"NAVIGATE"</span>:
+          <span class="kw">await</span> page.goto(val || step.url || <span class="str">""</span>,
+            { waitUntil: <span class="str">"networkidle"</span>, timeout: <span class="num">45000</span> })
+            .catch(() =&gt; page.goto(val || step.url || <span class="str">""</span>,
+              { waitUntil: <span class="str">"domcontentloaded"</span>, timeout: <span class="num">45000</span> }));
+          <span class="kw">await</span> page.waitForTimeout(<span class="num">3000</span>);
+          <span class="kw">await</span> dismissOverlays(page);
+          <span class="kw">break</span>;
+
+        <span class="kw">case</span> <span class="str">"INPUT"</span>: {
+          <span class="kw">const</span> el = <span class="kw">await</span> findWithHealing(page, step <span class="kw">as</span> <span class="type">HealerContext</span>);
+          <span class="kw">if</span> (!el) <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">`Not found: ${step.context}`</span>);
+          <span class="kw">await</span> el.click(); <span class="kw">await</span> page.waitForTimeout(<span class="num">300</span>);
+          <span class="kw">await</span> el.fill(<span class="str">""</span>);
+          <span class="kw">await</span> el.type(val, { delay: <span class="num">80</span> });
+          <span class="kw">await</span> page.waitForTimeout(<span class="num">1500</span>);
+          <span class="kw">break</span>;
+        }
+
+        <span class="kw">case</span> <span class="str">"CLICK"</span>: {
+          <span class="kw">if</span> (step.isExtractionTarget) {
+            <span class="kw">const</span> name = step.fieldName || step.context || <span class="str">"data"</span>;
+            <span class="kw">try</span> {
+              <span class="kw">const</span> texts = <span class="kw">await</span> page.locator(step.selector)
+                .allTextContents();
+              results[name] = texts.filter(t =&gt; t.trim()).map(t =&gt; t.trim());
+            } <span class="kw">catch</span> { results[name] = []; }
+            <span class="kw">break</span>;
+          }
+          <span class="kw">const</span> el = <span class="kw">await</span> findWithHealing(page, step <span class="kw">as</span> <span class="type">HealerContext</span>);
+          <span class="kw">if</span> (!el) <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">`Not found: ${step.context}`</span>);
+          <span class="kw">await</span> safeClick(el);
+          <span class="kw">await</span> page.waitForTimeout(<span class="num">1500</span>);
+          <span class="kw">await</span> dismissOverlays(page);
+          <span class="kw">break</span>;
+        }
+
+        <span class="kw">case</span> <span class="str">"SCROLL"</span>:
+          <span class="kw">await</span> page.mouse.wheel(<span class="num">0</span>, <span class="num">800</span>);
+          <span class="kw">await</span> page.waitForTimeout(<span class="num">500</span>);
+          <span class="kw">break</span>;
+
+        <span class="kw">case</span> <span class="str">"WAIT"</span>:
+          <span class="kw">await</span> page.waitForTimeout(parseInt(val) || <span class="num">2000</span>);
+          <span class="kw">break</span>;
+      }
+    }
+    <span class="kw">return</span> Object.keys(results).length
+      ? { totalResults: <span class="type">Object</span>.keys(results).reduce(
+          (m, k) =&gt; Math.max(m, results[k].length), <span class="num">0</span>), data: results }
+      : { message: <span class="str">"Workflow executed successfully"</span> };
+  } <span class="kw">finally</span> { <span class="kw">await</span> browser.close(); }
+}</code></pre>
+
+  <!-- 8. Healing Logic Code -->
+  <h2 id="code-healing"><span class="num">08</span>Healing Logic (≤250 lines)</h2>
+  <div class="file-label">backend/src/services/workflow/healer.ts</div>
+  <pre><code><span class="kw">import</span> { Page, Locator } <span class="kw">from</span> <span class="str">"playwright"</span>;
+
+<span class="kw">export interface</span> <span class="type">HealerContext</span> {
+  selector: <span class="type">string</span>;
+  context?: <span class="type">string</span> | <span class="type">null</span>;
+  text?: <span class="type">string</span> | <span class="type">null</span>;
+  rankedSelectors?: <span class="type">string</span>[];
+  intent?: <span class="type">string</span> | <span class="type">null</span>;
+  fingerprint?: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;;
+}
+
+<span class="kw">async function</span> <span class="fn">isVisible</span>(page: <span class="type">Page</span>, sel: <span class="type">string</span>): <span class="type">Promise</span>&lt;<span class="type">Locator</span> | <span class="type">null</span>&gt; {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> el = page.locator(sel).first();
+    <span class="kw">if</span> (<span class="kw">await</span> el.isVisible({ timeout: <span class="num">2000</span> }).catch(() =&gt; <span class="num">false</span>))
+      <span class="kw">return</span> el;
+  } <span class="kw">catch</span> {}
+  <span class="kw">return null</span>;
+}
+
+<span class="kw">function</span> <span class="fn">computeSimilarity</span>(
+  a: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;,
+  b: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;
+): <span class="type">number</span> {
+  <span class="kw">const</span> keys = <span class="type">Object</span>.keys(a);
+  <span class="kw">if</span> (!keys.length) <span class="kw">return</span> <span class="num">0</span>;
+  <span class="kw">let</span> matches = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> k <span class="kw">of</span> keys) {
+    <span class="kw">if</span> (b[k] &amp;&amp; b[k] === a[k]) matches++;
+  }
+  <span class="kw">return</span> matches / keys.length;
+}
+
+<span class="kw">export async function</span> <span class="fn">findWithHealing</span>(
+  page: <span class="type">Page</span>,
+  step: <span class="type">HealerContext</span>
+): <span class="type">Promise</span>&lt;<span class="type">Locator</span> | <span class="type">null</span>&gt; {
+  <span class="kw">const</span> searchText = step.text || step.context;
+
+  <span class="cm">// L0: Primary selector</span>
+  <span class="kw">const</span> l0 = <span class="kw">await</span> isVisible(page, step.selector);
+  <span class="kw">if</span> (l0) <span class="kw">return</span> l0;
+
+  <span class="cm">// L1: Ranked fallback selectors</span>
+  <span class="kw">if</span> (step.rankedSelectors) {
+    <span class="kw">for</span> (<span class="kw">const</span> sel <span class="kw">of</span> step.rankedSelectors) {
+      <span class="kw">const</span> el = <span class="kw">await</span> isVisible(page, sel);
+      <span class="kw">if</span> (el) <span class="kw">return</span> el;
+    }
+  }
+
+  <span class="cm">// L1b: Built-in fallbacks</span>
+  <span class="kw">const</span> testId = step.selector.match(
+    <span class="str">/\[data-testid="([^"]+)"\]/</span>);
+  <span class="kw">if</span> (testId) {
+    <span class="kw">const</span> el = <span class="kw">await</span> isVisible(page,
+      <span class="str">`[data-testid="${testId[1]}"]`</span>);
+    <span class="kw">if</span> (el) <span class="kw">return</span> el;
+  }
+  <span class="kw">if</span> (searchText &amp;&amp; searchText.length &gt; <span class="num">1</span> &amp;&amp;
+      searchText.length &lt; <span class="num">80</span>) {
+    <span class="kw">const</span> el = page.getByText(searchText,
+      { exact: <span class="num">false</span> }).first();
+    <span class="kw">if</span> (<span class="kw">await</span> el.isVisible({ timeout: <span class="num">1000</span> })
+      .catch(() =&gt; <span class="num">false</span>)) <span class="kw">return</span> el;
+  }
+  <span class="kw">for</span> (<span class="kw">const</span> role <span class="kw">of</span> [<span class="str">"button"</span>, <span class="str">"link"</span>, <span class="str">"tab"</span>]) {
+    <span class="kw">const</span> el = page.getByRole(role <span class="kw">as</span> <span class="type">any</span>,
+      { name: searchText || <span class="str">""</span> }).first();
+    <span class="kw">if</span> (<span class="kw">await</span> el.isVisible({ timeout: <span class="num">1000</span> })
+      .catch(() =&gt; <span class="num">false</span>)) <span class="kw">return</span> el;
+  }
+
+  <span class="cm">// L2: Structural matching</span>
+  <span class="kw">if</span> (step.fingerprint) {
+    <span class="kw">const</span> tag = step.fingerprint.tag || <span class="str">"button"</span>;
+    <span class="kw">const</span> candidates = <span class="kw">await</span> page.locator(tag).all();
+    <span class="kw">let</span> best: <span class="type">Locator</span> | <span class="type">null</span> = <span class="kw">null</span>;
+    <span class="kw">let</span> bestScore = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">const</span> c <span class="kw">of</span> candidates) {
+      <span class="kw">const</span> attrs = <span class="kw">await</span> c.evaluate((el) =&gt; ({
+        tag: el.tagName.toLowerCase(),
+        text: el.textContent?.trim().slice(<span class="num">0</span>, <span class="num">50</span>) || <span class="str">""</span>,
+        role: el.getAttribute(<span class="str">"role"</span>) || <span class="str">""</span>,
+      }));
+      <span class="kw">const</span> score = computeSimilarity(
+        step.fingerprint!, attrs);
+      <span class="kw">if</span> (score &gt; bestScore &amp;&amp; score &gt; <span class="num">0.5</span>) {
+        bestScore = score;
+        best = c;
+      }
+    }
+    <span class="kw">if</span> (best) <span class="kw">return</span> best;
+  }
+
+  <span class="cm">// L3: One-call LLM via Ollama llava</span>
+  <span class="kw">try</span> {
+    <span class="kw">const</span> screenshot = <span class="kw">await</span> page.screenshot({
+      encoding: <span class="str">"base64"</span>, fullPage: <span class="num">false</span>
+    });
+    <span class="kw">const</span> ollamaUrl = process.env.OLLAMA_HOST
+      || <span class="str">"http://127.0.0.1:11434"</span>;
+    <span class="kw">const</span> resp = <span class="kw">await</span> fetch(
+      <span class="str">`${ollamaUrl}/api/chat`</span>, {
+      method: <span class="str">"POST"</span>,
+      headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
+      body: JSON.stringify({
+        model: <span class="str">"llava"</span>,
+        messages: [{
+          role: <span class="str">"user"</span>,
+          content: <span class="str">`Find element: ${step.intent || step.context}. `</span>
+            + <span class="str">`Selector was: ${step.selector}. `</span>
+            + <span class="str">`Return JSON: {x,y,width,height,confidence}`</span>,
+          images: [screenshot],
+        }],
+        format: <span class="str">"json"</span>,
+      }),
+    });
+    <span class="kw">const</span> data = <span class="kw">await</span> resp.json();
+    <span class="kw">const</span> coords = JSON.parse(
+      data.message?.content || <span class="str">"{}"</span>);
+    <span class="kw">if</span> (coords.x &amp;&amp; coords.y) {
+      <span class="kw">return</span> page.locator(
+        <span class="str">`:xpath('//*')</span>
+      ).nth(<span class="num">0</span>).filter({
+        has: page.locator(<span class="str">`text="${step.text || ''}"`</span>),
+      }).first();
+    }
+  } <span class="kw">catch</span> (e) {
+    <span class="cm">// Ollama not available, skip to L5</span>
+    console.warn(<span class="str">"L3 skipped:"</span>, e.message);
+  }
+
+  <span class="kw">return null</span>;
+}</code></pre>
+
+  <!-- 9. Extension Code -->
+  <h2 id="code-extension"><span class="num">09</span>Extension Content Script (≤250 lines)</h2>
+  <div class="file-label">browser-extension/src/content/content-script.js (key sections)</div>
+  <pre><code><span class="cm">// Login handler — stores JWT for cross-origin API calls</span>
+<span class="kw">function</span> <span class="fn">doLogin</span>() {
+  <span class="kw">const</span> email = panel.querySelector(<span class="str">"#spEmail"</span>)?.value?.trim();
+  <span class="kw">const</span> pass = panel.querySelector(<span class="str">"#spPass"</span>)?.value;
+  <span class="kw">const</span> apiUrl = panel.querySelector(<span class="str">"#spApiUrl"</span>)?.value?.trim()
+    || <span class="str">"http://localhost:4000"</span>;
+  <span class="kw">if</span> (!email || !pass) { setStatus(<span class="str">"Enter email and password"</span>); <span class="kw">return</span>; }
+  setStatus(<span class="str">"Logging in..."</span>);
+  fetch(<span class="str">`${apiUrl}/api/auth/login`</span>, {
+    method: <span class="str">"POST"</span>,
+    headers: { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> },
+    body: JSON.stringify({ email, password: pass }),
+  })
+    .then(r =&gt; r.json())
+    .then(data =&gt; {
+      <span class="kw">if</span> (data.token) {
+        authToken = data.token;
+        chrome.storage.local.set({
+          shamsu_auth_token: data.token,
+          shamsu_api_url: apiUrl
+        });
+        renderPanelContent();
+      } <span class="kw">else</span> { setStatus(data.error || <span class="str">"Login failed"</span>); }
+    })
+    .catch(err =&gt; setStatus(<span class="str">"Error: "</span> + err.message));
+}
+
+<span class="cm">// Stop recording — sends workflow to backend</span>
+<span class="kw">function</span> <span class="fn">stopRecording</span>() {
+  isRecording = <span class="num">false</span>;
+  detachListeners();
+  chrome.storage.local.get(
+    [<span class="str">"shamsu_api_url"</span>, <span class="str">"shamsu_workflow_name"</span>], (data) =&gt; {
+    <span class="kw">const</span> url = data.shamsu_api_url || <span class="str">"http://localhost:4000"</span>;
+    <span class="kw">const</span> name = data.shamsu_workflow_name || <span class="str">"Untitled"</span>;
+    <span class="kw">const</span> headers = { <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span> };
+    <span class="kw">if</span> (authToken)
+      headers[<span class="str">"Authorization"</span>] = <span class="str">`Bearer ${authToken}`</span>;
+    fetch(<span class="str">`${url}/api/workflows/import`</span>, {
+      method: <span class="str">"POST"</span>,
+      headers,
+      body: JSON.stringify({ name, steps, extractionTargets }),
+    })
+    .then(r =&gt; r.json())
+    .then(data =&gt; {
+      <span class="kw">if</span> (data.workflow) setStatus(<span class="str">"Imported! Review in dashboard."</span>);
+      <span class="kw">else</span> setStatus(data.error || <span class="str">"Import failed"</span>);
+    })
+    .catch(err =&gt; setStatus(<span class="str">"Error: "</span> + err.message));
+  });
+}</code></pre>
+
+  <!-- 10. Security Model -->
+  <h2 id="security"><span class="num">10</span>Security Model</h2>
+  <div class="grid-2">
+    <div class="card"><h4>Authentication</h4><ul><li>JWT tokens with 7-day expiry</li><li>httpOnly cookies for web dashboard</li><li>Bearer token in response body for extension</li><li>bcryptjs password hashing (12 rounds)</li></ul></div>
+    <div class="card"><h4>Authorization</h4><ul><li>Role-based: USER, ADMIN</li><li>Admin middleware on admin routes</li><li>User isolation: workflows scoped to userId</li></ul></div>
+    <div class="card"><h4>Encryption</h4><ul><li>AES-256-GCM for stored credentials</li><li>Random IV per encryption operation</li><li>Decryption key in environment variable</li></ul></div>
+    <div class="card"><h4>CORS</h4><ul><li><code>origin: true</code> — reflects any origin</li><li>Required for extension cross-origin requests</li><li>Extension runs on arbitrary websites</li></ul></div>
+  </div>
+
+  <div style="margin-top:60px;padding:24px;text-align:center;border-top:1px solid var(--card-border)">
+    <p style="color:var(--dim);font-size:12px">Shamsu TDD v2.0 — July 2026</p>
+  </div>
+</main>
+</body>
+</html>

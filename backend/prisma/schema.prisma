@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ActionType {
+  NAVIGATE
+  INPUT
+  CLICK
+  SCROLL
+  WAIT
+  SELECT
+}
+
+enum CallStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+model User {
+  id                    String              @id @default(uuid())
+  name                  String
+  email                 String              @unique
+  passwordHash          String
+  role                  Role                @default(USER)
+  subscriptionStatus    SubscriptionStatus  @default(FREE)
+  subscriptionExpiresAt DateTime?
+  apiCreationAttempts   Int                 @default(0)
+  apiAttemptsResetAt    DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  paymentRequests       PaymentRequest[]
+  apis                  Api[]
+  workflows             Workflow[]
+}
+
+model Plan {
+  id           String           @id @default(uuid())
+  planName     String
+  priceBdt     Decimal          @db.Decimal(10, 2)
+  durationDays Int
+  active       Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  paymentRequests PaymentRequest[]
+}
+
+model PaymentRequest {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  planId        String?
+  plan          Plan?         @relation(fields: [planId], references: [id])
+  transactionId String
+  bkashNumber   String
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  reviewedAt    DateTime?
+  reviewedBy    String?
+}
+
+model Workflow {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  steps     WorkflowStep[]
+  variables WorkflowVariable[]
+  api       Api?
+}
+
+model WorkflowStep {
+  id                  String  @id @default(uuid())
+  workflowId          String
+  workflow            Workflow @relation(fields: [workflowId], references: [id])
+  stepOrder           Int
+  actionType          ActionType
+  selector            String
+  value               String?
+  url                 String?
+  context             String?
+  text                String?
+  isConstant          Boolean @default(true)
+  isExtractionTarget  Boolean @default(false)
+  containerSelector   String?
+  fieldSelector       String?
+  fieldName           String?
+  extractAll          Boolean @default(false)
+}
+
+model WorkflowVariable {
+  id           String  @id @default(uuid())
+  workflowId   String
+  workflow     Workflow @relation(fields: [workflowId], references: [id])
+  stepId       String?
+  variableName String
+  defaultValue String?
+  required     Boolean @default(true)
+}
+
+model Api {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  apiName         String
+  description     String?
+  workflowId      String    @unique
+  workflow        Workflow  @relation(fields: [workflowId], references: [id])
+  complexityLevel Int
+  pricePerCall    Decimal   @db.Decimal(10, 2)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  apiCalls        ApiCall[]
+}
+
+model ApiCall {
+  id         String     @id @default(uuid())
+  apiId      String
+  api        Api        @relation(fields: [apiId], references: [id])
+  userId     String
+  callCost   Decimal    @db.Decimal(10, 2)
+  status     CallStatus @default(PENDING)
+  resultJson Json?
+  createdAt  DateTime   @default(now())
+}
+
+model SystemSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 340px;
+      min-height: 400px;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 0;
+    }
+    .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(0,212,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .status { font-size: 11px; padding: 3px 8px; border-radius: 20px; }
+    .status-idle { background: rgba(255,255,255,0.05); color: #64748b; }
+    .status-recording { background: rgba(255,51,102,0.15); color: #ff3366; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+    .content { padding: 16px 20px; }
+    .section { margin-bottom: 16px; }
+    .label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d0d14;
+      border: 1px solid rgba(0,212,255,0.12);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #00d4ff; }
+    input::placeholder { color: #475569; }
+    button {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      color: #0a0a0f;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-danger {
+      background: rgba(255,51,102,0.15);
+      color: #ff3366;
+      border: 1px solid rgba(255,51,102,0.3);
+    }
+    .btn-danger:hover { background: rgba(255,51,102,0.25); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-secondary:hover { border-color: rgba(0,212,255,0.3); color: #e2e8f0; }
+    .btn-import {
+      background: rgba(0,255,136,0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+    .btn-import:hover { background: rgba(0,255,136,0.2); }
+    .step-count { font-size: 12px; color: #64748b; text-align: center; padding: 8px; }
+    .user-info { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(0,212,255,0.05); border-radius: 8px; border: 1px solid rgba(0,212,255,0.1); }
+    .user-info .name { font-size: 13px; color: #e2e8f0; }
+    .user-info .logout { font-size: 11px; color: #ff3366; cursor: pointer; background: none; border: none; width: auto; padding: 0; }
+    .hidden { display: none; }
+    .tutorial {
+      padding: 12px;
+      background: rgba(124,58,237,0.05);
+      border: 1px solid rgba(124,58,237,0.15);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .tutorial h4 { font-size: 12px; color: #7c3aed; margin-bottom: 6px; }
+    .tutorial p { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+    .tutorial ol { font-size: 11px; color: #94a3b8; line-height: 1.6; padding-left: 16px; margin-top: 4px; }
+    .divider { height: 1px; background: rgba(0,212,255,0.08); margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">SHAMSU</span>
+    <span id="statusBadge" class="status status-idle">Idle</span>
+  </div>
+
+  <!-- Login View -->
+  <div id="loginView" class="content">
+    <div class="section">
+      <div class="label">Email</div>
+      <input type="email" id="loginEmail" placeholder="admin@shamsu.com">
+    </div>
+    <div class="section">
+      <div class="label">Password</div>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="loginBtn">Sign In</button>
+    <p id="loginError" style="color:#ff3366;font-size:11px;margin-top:8px;text-align:center;"></p>
+  </div>
+
+  <!-- Main View -->
+  <div id="mainView" class="content hidden">
+    <div id="userBar" class="user-info" style="margin-bottom:16px">
+      <span class="name" id="userName"></span>
+      <button class="logout" id="logoutBtn">Sign Out</button>
+    </div>
+
+    <div id="tutorialBox" class="tutorial">
+      <h4>Quick Guide</h4>
+      <ol>
+        <li>Navigate to the target website</li>
+        <li>Click <strong>Start Recording</strong></li>
+        <li>Perform your workflow (clicks, typing, navigation)</li>
+        <li>To extract data: click on one instance of each field you want</li>
+        <li>For multi-page: click &quot;Next Page&quot; as a recorded step</li>
+        <li>Click <strong>Stop Recording</strong></li>
+        <li>Click <strong>Import to Shamsu</strong></li>
+      </ol>
+    </div>
+
+    <div id="recordingControls">
+      <button class="btn-primary" id="startBtn">Start Recording</button>
+    </div>
+
+    <div id="recordedControls" class="hidden">
+      <div class="step-count" id="stepCount">0 steps recorded</div>
+      <button class="btn-danger" id="stopBtn" style="margin-bottom:8px">Stop Recording</button>
+    </div>
+
+    <div id="importControls" class="hidden">
+      <div class="divider"></div>
+      <div class="section">
+        <div class="label">Workflow Name</div>
+        <input type="text" id="workflowName" placeholder="e.g., Booking.com Hotel Search">
+      </div>
+      <button class="btn-import" id="importBtn" style="margin-bottom:8px">Import to Shamsu</button>
+      <button class="btn-secondary" id="resetBtn">Record Again</button>
+    </div>
+
+    <p id="importStatus" style="font-size:11px;text-align:center;margin-top:8px;"></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
