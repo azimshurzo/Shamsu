@@ -1,0 +1,365 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PRDMSCW - Shamsu.com</title></head><body>
+<pre>
+# PRDMSCW — Shamsu.com (Local MVP)
+
+## 1. Product Overview
+
+### Product Name
+Shamsu.com
+
+### Product Vision
+Shamsu.com is a locally hosted no-code API creation platform that allows users to create custom APIs by demonstrating actions on websites. Users record a workflow, identify which inputs are variable or constant, generate an API, and then execute that API directly from the Shamsu dashboard.
+
+### Target Users
+
+- Non-technical users
+- Students
+- Small businesses
+- Researchers
+- Automation enthusiasts
+
+### Hosting Strategy
+
+The MVP will be hosted entirely locally.
+
+- Frontend hosted locally
+- Backend hosted locally
+- Database hosted locally
+
+No cloud deployment is required for the MVP.
+
+---
+
+# 2. Problem Statement
+
+Many websites do not provide APIs for the data users need.
+
+Creating APIs manually requires programming knowledge.
+
+Shamsu solves this by allowing users to demonstrate a workflow and automatically convert it into a reusable API.
+
+---
+
+# 3. MoSCoW Prioritization
+
+## MUST HAVE
+
+### Authentication
+
+- User registration
+- User login
+- User logout
+- Password hashing
+- Session management
+
+### User Dashboard
+
+Users must be able to:
+
+- View subscription status
+- View API creation attempts
+- Create APIs
+- View existing APIs
+- Execute APIs
+- Submit payments
+
+### Admin Dashboard
+
+Admin dashboard must be visually different from user dashboard.
+
+Admin must be able to:
+
+- View users
+- View APIs
+- Manage pricing
+- Approve payments
+- Reject payments
+- Configure system settings
+
+### Free Tier
+
+Users receive:
+
+- 5 API creation attempts per day
+
+Important:
+
+- This means 5 attempts to create APIs
+- Not 5 successful API creations
+
+All limits must be configurable from the admin panel.
+
+### Payment System (Placeholder)
+
+User Flow:
+
+1. User selects a plan
+2. Shamsu displays a bKash QR code
+3. User sends payment
+4. User enters:
+   - bKash number
+   - Transaction ID
+5. Payment enters verification queue
+
+Admin Flow:
+
+1. Admin opens payment queue
+2. Admin sees pending requests
+3. Admin approves or rejects payment
+4. User subscription is updated
+
+Requirements:
+
+- Payment requests must stack in a queue
+- Admin approval required
+- Entire payment system must be replaceable
+
+Future payment gateways:
+
+- SSLCommerz
+- Official bKash Merchant API
+- Other gateways
+
+No future codebase rewrite should be required.
+
+### API Recording System
+
+User clicks:
+
+- Start Recording
+
+System records:
+
+- Clicks
+- Navigation
+- Input values
+- Form interactions
+- Workflow sequence
+
+The implementation may use:
+
+- Browser extension
+- Browser automation tools
+- Other reliable methods
+
+The goal is accurate workflow capture.
+
+### Variable vs Constant Interface
+
+After recording:
+
+The system must display:
+
+- Every recorded step
+- Every recorded click
+- Every recorded input
+
+For each input:
+
+User chooses:
+
+- Variable
+- Constant
+
+Using:
+
+- Checkboxes
+- Toggles
+- Interactive UI
+
+No LLM chat clarification stage in MVP.
+
+### API Generation
+
+System converts:
+
+Recorded workflow
++
+Variable/Constant definitions
+
+Into:
+
+- Reusable API
+- Endpoint
+- Metadata
+
+### API Execution
+
+Users must be able to execute APIs directly from the dashboard.
+
+Flow:
+
+1. Open API
+2. Variable fields appear
+3. User enters values
+4. Execute API
+5. Workflow runs
+6. Results returned
+
+### Result Display
+
+Results must be displayed as:
+
+- Human-friendly text
+- Cards
+- Tables
+
+Also provide:
+
+- View JSON
+- Copy JSON
+- Download JSON
+
+### Validation
+
+Real-time validation required.
+
+Examples:
+
+- API names have maximum length
+- Prevent excessively long text
+- Required field validation
+
+Basic validation only for:
+
+- Email
+- bKash number
+- Transaction ID
+
+Advanced validation can be added later.
+
+### API Pricing
+
+Every API receives an automatic call price.
+
+Suggested range:
+
+- Simple APIs = 2 BDT/call
+- Medium APIs = 3–4 BDT/call
+- Complex APIs = 5 BDT/call
+
+Admin can override all prices.
+
+All pricing must be configurable.
+
+## SHOULD HAVE
+
+### Marketplace
+
+Users can:
+
+- Publish APIs
+- Share APIs
+- Sell APIs
+
+Marketplace should support:
+
+- Search
+- Categories
+- Listings
+
+### Usage Analytics
+
+Users can view:
+
+- API calls
+- Spending
+- Usage history
+
+Admins can view:
+
+- Global statistics
+- Revenue metrics
+
+### API Documentation Page
+
+Automatically generated:
+
+- Endpoint
+- Inputs
+- Outputs
+- Example requests
+
+## COULD HAVE
+
+### AI Workflow Analysis
+
+Future versions may use AI to:
+
+- Suggest variables
+- Detect constants
+- Improve workflows
+
+### API Templates
+
+Examples:
+
+- Hotel Search
+- Stock Search
+- Form Submission
+
+### Public API Directory
+
+Allow users to browse public APIs.
+
+## WON'T HAVE (MVP)
+
+The MVP will NOT include:
+
+- Cloud deployment
+- Automatic payment verification
+- Official payment gateway integration
+- Revenue sharing system
+- Mobile applications
+- Multi-server deployment
+- Advanced AI agent orchestration
+- Automatic marketplace moderation
+
+These features are future roadmap items.
+
+# 4. Success Criteria
+
+The MVP is considered successful if:
+
+1. Users can register and login.
+2. Users can record website workflows.
+3. Users can mark fields as variable or constant.
+4. APIs can be generated.
+5. APIs can be executed from the dashboard.
+6. Results can be displayed and exported as JSON.
+7. Payments can be submitted and approved by admins.
+8. Pricing can be configured by admins.
+9. The entire platform runs locally.
+
+# 5. Technical Requirements
+
+### Architecture
+
+- Modular
+- Extensible
+- Replaceable payment provider
+- Replaceable workflow recorder
+- Replaceable AI layer
+
+### Database
+
+Store:
+
+- Users
+- APIs
+- Workflows
+- Recorded actions
+- Variables
+- Constants
+- Payments
+- Pricing
+- Subscription plans
+
+### Security
+
+- Password hashing
+- Role-based access
+- Input validation
+- Session security
+- Audit logging for payment approvals
+</pre></body></html>

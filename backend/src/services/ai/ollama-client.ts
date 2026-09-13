@@ -111,11 +111,20 @@ class OllamaClient {
     return exact ? exact.name : null;
   }
 
+  async resolveModel(modelName: string): Promise<string> {
+    const models = await this.getModels();
+    const exact = models.find((m) => m.name === modelName);
+    if (exact) return exact.name;
+    const family = models.find((m) => m.name.split(":")[0] === modelName);
+    return family ? family.name : modelName;
+  }
+
   async generate(request: OllamaGenerateRequest): Promise<string> {
     const response = await this.client.post<OllamaGenerateResponse>(
       "/api/generate",
       {
         ...request,
+        model: await this.resolveModel(request.model),
         stream: false,
       }
     );
@@ -127,6 +136,7 @@ class OllamaClient {
       "/api/chat",
       {
         ...request,
+        model: await this.resolveModel(request.model),
         stream: false,
       }
     );

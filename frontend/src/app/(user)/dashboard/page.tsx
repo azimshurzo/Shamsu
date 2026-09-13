@@ -42,6 +42,16 @@ export default function UserDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Link
+            href="/dashboard/voice"
+            className="flex items-center gap-3 p-4 rounded-lg border border-[rgba(0,255,136,0.1)] hover:border-[rgba(0,255,136,0.3)] hover:bg-[rgba(0,255,136,0.04)] transition-all"
+          >
+            <span className="text-[#00ff88] text-lg">▮</span>
+            <div>
+              <p className="text-sm font-medium text-[#e2e8f0]">Create API by Voice</p>
+              <p className="text-xs text-[#64748b]">Say what you want, Shamsu does the rest</p>
+            </div>
+          </Link>
+          <Link
             href="/dashboard/workflows"
             className="flex items-center gap-3 p-4 rounded-lg border border-[rgba(0,212,255,0.1)] hover:border-[rgba(0,212,255,0.3)] hover:bg-[rgba(0,212,255,0.04)] transition-all"
           >

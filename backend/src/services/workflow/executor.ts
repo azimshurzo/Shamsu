@@ -22,7 +22,7 @@ interface VariableDef {
   defaultValue?: string | null;
 }
 
-async function dismissOverlays(page: Page): Promise<void> {
+export async function dismissOverlays(page: Page): Promise<void> {
   const dismissSelectors = [
     '[data-testid="modal-close"]',
     '[aria-label="Dismiss sign-in info."]',
@@ -77,7 +77,63 @@ async function safeClick(locator: Locator): Promise<void> {
   }
 }
 
-async function getPageDomSummary(page: Page): Promise<string> {
+export async function performSearch(page: Page, searchSelector: string, example: string): Promise<void> {
+  const searchInput = page.locator(searchSelector).first();
+  await searchInput.scrollIntoViewIfNeeded().catch(() => {});
+  const trySubmit = async () => {
+    try {
+      await searchInput.click({ timeout: 5000 });
+      await searchInput.fill("");
+      await searchInput.type(example, { delay: 60 });
+    } catch {
+      // Hidden / focus-reveal search input: focus via JS and type with the keyboard.
+      await page.evaluate((sel) => {
+        const el = document.querySelector(sel) as HTMLInputElement | null;
+        if (el) el.focus();
+      }, searchSelector);
+      await page.waitForTimeout(200);
+      await page.keyboard.type(example, { delay: 60 });
+    }
+    await page.waitForTimeout(600);
+    await searchInput.press("Enter").catch(() => page.keyboard.press("Enter"));
+  };
+
+  const startUrl = page.url();
+  await trySubmit();
+
+  const changed = await page
+    .waitForFunction(
+      (base) => window.location.href.split("?")[0] !== base.split("?")[0],
+      startUrl,
+      { timeout: 10000 }
+    )
+    .then(() => true, () => false);
+
+  if (!changed) {
+    await trySubmit();
+    await page
+      .waitForFunction(
+        (base) => window.location.href.split("?")[0] !== base.split("?")[0],
+        startUrl,
+        { timeout: 8000 }
+      )
+      .then(() => {}, () => {});
+  }
+
+  // Last resort: many sites use a /search?q= endpoint.
+  if (page.url().split("?")[0] === startUrl.split("?")[0]) {
+    const u = new URL(startUrl);
+    await page
+      .goto(`${u.origin}/search?q=${encodeURIComponent(example)}`, {
+        waitUntil: "domcontentloaded",
+        timeout: 45000,
+      })
+      .catch(() => {});
+    await page.waitForTimeout(3000);
+  }
+}
+
+export async function getPageDomSummary(page: Page): Promise<string> {
   return page.evaluate(() => {
     const inputs = Array.from(document.querySelectorAll("input, textarea, select"));
     const buttons = Array.from(document.querySelectorAll("button, a[role='button'], input[type='submit']"));
@@ -128,15 +184,16 @@ async function getPageDomSummary(page: Page): Promise<string> {
   });
 }
 
-async function aiFindElement(
+export async function aiFindElement(
   page: Page,
   actionType: string,
   context: string,
-  value: string
+  value: string,
+  model: string = "llama3.2"
 ): Promise<{ selector: string; confidence: number } | null> {
   try {
     const available = await ollamaClient.isAvailable();
-    const hasModel = await ollamaClient.hasModel("llama3.2");
+    const hasModel = await ollamaClient.hasModel(model);
     if (!available || !hasModel) return null;
 
     const domSummary = await getPageDomSummary(page);
@@ -167,7 +224,7 @@ Rules:
 - For search inputs, prefer inputs with name="search", id containing "search", or placeholder containing "search"`;
 
     const response = await ollamaClient.chat({
-      model: "llama3.2",
+      model,
       messages: [{ role: "user", content: prompt }],
       options: { temperature: 0.1, num_predict: 256 },
     });
@@ -418,6 +475,23 @@ export async function executeWorkflow(
           
           let el = await findElement(page, step);
           if (!el) {
+            // Hidden-but-present inputs (focus-reveal boxes, mobile navs)
+            const hiddenSignals = [
+              'input[type="search"]',
+              'input[name="q"]',
+              'input[id*="search" i]',
+              'input[aria-label*="search" i]',
+              'input[placeholder*="search" i]',
+            ];
+            for (const sel of hiddenSignals) {
+              const count = await page.locator(sel).count().catch(() => 0);
+              if (count > 0) {
+                el = page.locator(sel).first();
+                break;
+              }
+            }
+          }
+          if (!el) {
             console.log("Primary selector failed, trying AI DOM analysis...");
             const aiResult = await aiFindElement(page, "INPUT", step.context || "", value);
             if (aiResult) {
@@ -427,27 +501,39 @@ export async function executeWorkflow(
           if (!el) {
             throw new Error(`Could not find input field: ${step.context || step.selector}`);
           }
+
+          const isSearch = step.context?.toLowerCase().includes("search") || step.selector?.toLowerCase().includes("search");
+
+          if (isSearch) {
+            await performSearch(page, step.selector, value || "");
+            break;
+          }
           
           // Scroll element into view
           await el.scrollIntoViewIfNeeded().catch(() => {});
           await page.waitForTimeout(500);
           
-          // Click to focus, then clear and type
-          await el.click();
-          await page.waitForTimeout(300);
-          await el.fill("");
-          await page.waitForTimeout(200);
-          await el.type(value || "", { delay: 80 });
+          try {
+            // Click to focus, then clear and type
+            await el.click({ timeout: 5000 });
+            await page.waitForTimeout(300);
+            await el.fill("");
+            await page.waitForTimeout(200);
+            await el.type(value || "", { delay: 80 });
+          } catch {
+            // Hidden input: focus via JS and type with the keyboard
+            await page
+              .evaluate((sel) => {
+                const input = document.querySelector(sel) as HTMLInputElement | null;
+                if (input) input.focus();
+              }, step.selector)
+              .catch(() => {});
+            await page.waitForTimeout(200);
+            await page.keyboard.type(value || "", { delay: 80 });
+          }
           
           // Wait for autocomplete/suggestions to appear
           await page.waitForTimeout(2000);
-          
-          // Press Enter to submit if it's a search
-          if (step.context?.toLowerCase().includes("search") || step.selector?.toLowerCase().includes("search")) {
-            console.log("Search input detected, pressing Enter...");
-            await el.press("Enter");
-            await page.waitForTimeout(3000);
-          }
           break;
         }
 
@@ -563,7 +649,7 @@ export async function executeWorkflow(
   }
 }
 
-async function autoExtractProducts(page: Page): Promise<Record<string, any[]>> {
+export async function autoExtractProducts(page: Page): Promise<Record<string, any[]>> {
   const results: Record<string, any[]> = {};
 
   try {

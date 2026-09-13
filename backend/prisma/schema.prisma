@@ -39,6 +39,13 @@ enum CallStatus {
   PENDING
 }
 
+enum VoiceJobStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 model User {
   id                    String              @id @default(uuid())
   name                  String
@@ -54,6 +61,7 @@ model User {
   paymentRequests       PaymentRequest[]
   apis                  Api[]
   workflows             Workflow[]
+  voiceJobs             VoiceJob[]
 }
 
 model Plan {
@@ -152,4 +160,21 @@ model SystemSetting {
   id    String @id @default(uuid())
   key   String @unique
   value String
+}
+
+model VoiceJob {
+  id         String          @id @default(uuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id])
+  transcript String
+  intentJson Json?
+  status     VoiceJobStatus  @default(PENDING)
+  stage      String          @default("queued")
+  logs       Json?
+  sampleJson Json?
+  workflowId String?
+  apiId      String?
+  error      String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 }

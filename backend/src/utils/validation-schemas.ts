@@ -84,3 +84,32 @@ export const workflowUpdateSchema = z.object({
 export const executeApiSchema = z.object({
   variables: z.record(z.string()),
 });
+
+export const voiceParseSchema = z.object({
+  transcript: z.string().min(3).max(500),
+});
+
+export const voiceIntentSchema = z.object({
+  apiName: z.string().min(1).max(50),
+  description: z.string().max(300).optional(),
+  targetUrl: z.string().url(),
+  action: z.string().max(30).optional(),
+  variables: z.array(
+    z.object({
+      name: z.string().min(1).max(50),
+      example: z.string().max(100).optional(),
+      purpose: z.string().max(100).optional(),
+    })
+  ).optional(),
+  extractionTargets: z.array(
+    z.object({
+      name: z.string().min(1).max(50),
+      kind: z.string().max(50).optional(),
+    })
+  ).optional(),
+});
+
+export const voiceCreateSchema = z.object({
+  transcript: z.string().min(3).max(500),
+  intent: voiceIntentSchema,
+});

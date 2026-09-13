@@ -13,6 +13,7 @@ const userNav: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: "◈" },
   { label: "My APIs", href: "/dashboard/apis", icon: "⬡" },
   { label: "Workflows", href: "/dashboard/workflows", icon: "◉" },
+  { label: "Voice Create", href: "/dashboard/voice", icon: "▮" },
   { label: "Payments", href: "/dashboard/payments", icon: "◎" },
   { label: "AI Settings", href: "/dashboard/ai", icon: "⚡" },
 ];

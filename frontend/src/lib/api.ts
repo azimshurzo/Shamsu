@@ -59,6 +59,13 @@ export const api = {
       request<{ payment: any }>("/api/payments", { method: "POST", body: JSON.stringify(body) }),
     my: () => request<{ payments: any[] }>("/api/payments/my"),
   },
+  voice: {
+    parse: (transcript: string) =>
+      request<{ success: boolean; intent: any }>("/api/voice/parse", { method: "POST", body: JSON.stringify({ transcript }) }),
+    create: (transcript: string, intent: any) =>
+      request<{ job: any }>("/api/voice/create", { method: "POST", body: JSON.stringify({ transcript, intent }) }),
+    job: (id: string) => request<{ job: any }>(`/api/voice/jobs/${id}`),
+  },
   admin: {
     users: () => request<{ users: any[] }>("/api/admin/users"),
     pendingPayments: () => request<{ payments: any[] }>("/api/admin/payments/pending"),

@@ -1,0 +1,98 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TDD - Shamsu.com</title></head><body><pre>
+Technical Design Document (TDD)
+Shamsu.com – Local MVP
+Version 1.0
+
+Goal: Build a locally hosted no-code API generation platform that allows users to record a workflow on a website, mark inputs as Variable or Constant, generate an API from the workflow, execute the API from the dashboard, and view results in human-readable and JSON formats.
+
+High-Level Architecture:
+Frontend (React/NextJS) -> Backend (Node.js API) -> PostgreSQL + Workflow Executor (Playwright)
+
+Recommended Stack:
+Frontend: Next.js, React, TypeScript, Tailwind CSS, Shadcn/UI
+Backend: Node.js, Express
+Database: PostgreSQL
+ORM: Prisma
+Workflow Engine: Playwright
+Authentication: JWT, HttpOnly Cookies
+
+User Roles:
+User: Register, Login, Create APIs, Execute APIs, Submit payments, View subscription
+Admin: Login, Approve payments, Reject payments, Manage pricing, Manage users, View APIs
+
+Database Tables:
+users(id, name, email, password_hash, role, subscription_status, created_at)
+plans(id, plan_name, price_bdt, duration_days, active)
+payment_requests(id, user_id, transaction_id, bkash_number, amount, status, created_at)
+apis(id, user_id, api_name, description, complexity_level, price_per_call, workflow_id, created_at)
+workflows(id, user_id, name, created_at)
+workflow_steps(id, workflow_id, step_order, action_type, selector, value)
+workflow_variables(id, workflow_id, variable_name, default_value, required)
+api_calls(id, api_id, user_id, call_cost, created_at)
+
+Recording Architecture:
+Recommended Method: Browser Extension
+Records URL, clicks, input values, form submissions, navigation.
+User starts recording, performs workflow, stops recording, extension sends workflow to backend.
+
+Variable/Constant Review Screen:
+Display every recorded step and input.
+User marks each input as Variable or Constant using toggles or checkboxes.
+
+API Generation:
+Store workflow, variable definitions and metadata.
+Create endpoint: /api/run/{apiId}
+
+API Execution Flow:
+User opens API -> Dynamic form generated -> User enters variable values -> Backend runs Playwright workflow -> Data returned.
+
+Result Viewer:
+Human-readable cards/tables.
+JSON view.
+Copy JSON.
+Download JSON.
+
+Pricing Engine:
+1-5 actions = 2 BDT
+6-10 actions = 3 BDT
+11-20 actions = 4 BDT
+20+ actions = 5 BDT
+Admin can override any amount.
+
+Admin Dashboard:
+User Management
+Payment Queue
+Pricing Management
+API Management
+
+Validation Rules:
+API Name: 3-50 chars
+User Name: 2-50 chars
+Description: max 500 chars
+Validate while typing.
+
+Folder Structure:
+shamsu/
+frontend/
+backend/
+database/
+browser-extension/
+
+MVP Development Order:
+1. Authentication
+2. User Dashboard
+3. Admin Dashboard
+4. Database
+5. Payment Queue
+6. Plan Management
+7. Browser Extension Recorder
+8. Variable/Constant Review
+9. Workflow Storage
+10. Playwright Execution Engine
+11. Result Viewer
+12. Pricing Engine
+13. Final Testing
+
+Biggest Technical Risk:
+Workflow recording and reliable replay across arbitrary websites using the recorder and Playwright replay engine.
+</pre></body></html>

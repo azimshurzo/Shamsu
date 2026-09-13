@@ -10,6 +10,7 @@ import executionRoutes from "./routes/execution";
 import paymentRoutes from "./routes/payments";
 import adminRoutes from "./routes/admin";
 import aiRoutes from "./routes/ai";
+import voiceRoutes from "./routes/voice";
 
 export const prisma = new PrismaClient();
 
@@ -28,6 +29,7 @@ app.use("/api/execution", executionRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/voice", voiceRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

@@ -110,3 +110,39 @@ export interface AdminStats {
   pendingPayments: number;
   totalRevenue: number;
 }
+
+export interface VoiceIntentVariable {
+  name: string;
+  example: string;
+  purpose: string;
+}
+
+export interface VoiceIntentExtraction {
+  name: string;
+  kind: string;
+}
+
+export interface VoiceIntent {
+  apiName: string;
+  description: string;
+  targetUrl: string;
+  action: string;
+  variables: VoiceIntentVariable[];
+  extractionTargets: VoiceIntentExtraction[];
+}
+
+export interface VoiceJob {
+  id: string;
+  userId: string;
+  transcript: string;
+  intentJson?: VoiceIntent;
+  status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED";
+  stage: string;
+  logs?: { at: string; stage: string; message: string }[];
+  sampleJson?: any;
+  workflowId?: string;
+  apiId?: string;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
